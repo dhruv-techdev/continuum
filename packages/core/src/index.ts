@@ -74,6 +74,24 @@ export type {
   IntegrityIssue,
 } from './ledger/index';
 
+// State engine
+export {
+  StatementCategories,
+  ConfidenceLevels,
+  extractWorkingState,
+  generateBootstrap,
+  saveWorkingState,
+  loadWorkingState,
+} from './state-engine/index';
+
+export type {
+  StatementCategory,
+  ConfidenceLevel,
+  Statement,
+  WorkingState,
+  BootstrapContext,
+} from './state-engine/index';
+
 // Import
 export {
   detectFormat,
