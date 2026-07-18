@@ -15,11 +15,7 @@ function sessionDir(workspaceRoot: string, projectId: string, sessionId: string)
   return join(sessionsRoot(workspaceRoot, projectId), sessionId);
 }
 
-function sessionManifestPath(
-  workspaceRoot: string,
-  projectId: string,
-  sessionId: string,
-): string {
+function sessionManifestPath(workspaceRoot: string, projectId: string, sessionId: string): string {
   return join(sessionDir(workspaceRoot, projectId, sessionId), SESSION_MANIFEST);
 }
 
@@ -94,11 +90,7 @@ export function startSession(
 
   try {
     mkdirSync(dir, { recursive: true });
-    writeFileSync(
-      join(dir, SESSION_MANIFEST),
-      JSON.stringify(session, null, 2) + '\n',
-      'utf-8',
-    );
+    writeFileSync(join(dir, SESSION_MANIFEST), JSON.stringify(session, null, 2) + '\n', 'utf-8');
   } catch (err) {
     return { data: null, error: `Failed to start session: ${(err as Error).message}` };
   }

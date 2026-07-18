@@ -1,8 +1,4 @@
-export {
-  generateProjectId,
-  generateSessionId,
-  SessionStatuses,
-} from './types';
+export { generateProjectId, generateSessionId, SessionStatuses } from './types';
 
 export type {
   SessionStatus,

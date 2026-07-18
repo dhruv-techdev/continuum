@@ -88,7 +88,10 @@ export function validateConfig(config: unknown): ValidationError[] {
   } else {
     const cap = c.capture as Record<string, unknown>;
     if (!Array.isArray(cap.excludePatterns)) {
-      errors.push({ field: 'capture.excludePatterns', message: 'Must be an array of glob strings.' });
+      errors.push({
+        field: 'capture.excludePatterns',
+        message: 'Must be an array of glob strings.',
+      });
     }
     if (!['sha256', 'sha512'].includes(cap.hashAlgorithm as string)) {
       errors.push({ field: 'capture.hashAlgorithm', message: 'Must be "sha256" or "sha512".' });
@@ -183,7 +186,12 @@ export function loadConfig(root: string = DEFAULT_ROOT): LoadConfigResult {
   if (!existsSync(configPath)) {
     return {
       config: null,
-      errors: [{ field: 'config.json', message: `Not found at ${configPath}. Run "continuum init" first.` }],
+      errors: [
+        {
+          field: 'config.json',
+          message: `Not found at ${configPath}. Run "continuum init" first.`,
+        },
+      ],
       raw: null,
     };
   }
@@ -205,7 +213,12 @@ export function loadConfig(root: string = DEFAULT_ROOT): LoadConfigResult {
   } catch {
     return {
       config: null,
-      errors: [{ field: 'config.json', message: 'Invalid JSON. Fix or delete the file and run "continuum init".' }],
+      errors: [
+        {
+          field: 'config.json',
+          message: 'Invalid JSON. Fix or delete the file and run "continuum init".',
+        },
+      ],
       raw,
     };
   }

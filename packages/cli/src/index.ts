@@ -6,6 +6,7 @@ import { registerInitCommand } from './commands/init';
 import { registerDoctorCommand } from './commands/doctor';
 import { registerProjectCommand } from './commands/project';
 import { registerSessionCommand } from './commands/session';
+import { registerImportCommand } from './commands/import';
 
 const program = new Command();
 
@@ -18,5 +19,6 @@ registerInitCommand(program);
 registerDoctorCommand(program);
 registerProjectCommand(program);
 registerSessionCommand(program);
+registerImportCommand(program);
 
 program.parse();

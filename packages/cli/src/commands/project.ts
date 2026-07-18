@@ -9,9 +9,7 @@ import {
 } from '@continuum/core';
 
 export function registerProjectCommand(program: Command): void {
-  const project = program
-    .command('project')
-    .description('Manage projects');
+  const project = program.command('project').description('Manage projects');
 
   // ── create ──────────────────────────────────────────────────
 
