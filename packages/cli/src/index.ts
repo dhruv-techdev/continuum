@@ -9,6 +9,7 @@ import { registerSessionCommand } from './commands/session';
 import { registerImportCommand } from './commands/import';
 import { registerVerifyLedgerCommand } from './commands/verify-ledger';
 import { registerStateCommand } from './commands/state';
+import { registerCaptureCommand } from './commands/capture';
 
 const program = new Command();
 
@@ -24,5 +25,6 @@ registerSessionCommand(program);
 registerImportCommand(program);
 registerVerifyLedgerCommand(program);
 registerStateCommand(program);
+registerCaptureCommand(program);
 
 program.parse();
