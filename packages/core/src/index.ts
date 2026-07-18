@@ -11,3 +11,21 @@ export interface CheckResult {
   status: 'pass' | 'fail' | 'warn';
   message: string;
 }
+
+export {
+  DEFAULT_ROOT,
+  WORKSPACE_DIRS,
+  CONFIG_FILENAME,
+  defaultConfig,
+  validateConfig,
+  initWorkspace,
+  loadConfig,
+  isWorkspaceInitialized,
+} from './workspace';
+
+export type {
+  ContinuumConfig,
+  ValidationError,
+  InitResult,
+  LoadConfigResult,
+} from './workspace';
