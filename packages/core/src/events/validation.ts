@@ -70,14 +70,24 @@ function validateBaseFields(event: Record<string, unknown>): ValidationError[] {
   }
 
   if (!isValidTimestamp(event.timestamp)) {
-    errors.push({ field: 'timestamp', message: 'Must be a valid ISO 8601 UTC string (ending in Z).' });
+    errors.push({
+      field: 'timestamp',
+      message: 'Must be a valid ISO 8601 UTC string (ending in Z).',
+    });
   }
 
-  if (typeof event.sequence !== 'number' || !Number.isInteger(event.sequence) || event.sequence < 0) {
+  if (
+    typeof event.sequence !== 'number' ||
+    !Number.isInteger(event.sequence) ||
+    event.sequence < 0
+  ) {
     errors.push({ field: 'sequence', message: 'Must be a non-negative integer.' });
   }
 
-  if (!isNonEmptyString(event.schemaVersion) || !SEMVER_PATTERN.test(event.schemaVersion as string)) {
+  if (
+    !isNonEmptyString(event.schemaVersion) ||
+    !SEMVER_PATTERN.test(event.schemaVersion as string)
+  ) {
     errors.push({ field: 'schemaVersion', message: 'Must be a valid semver string.' });
   } else if (!isCompatibleSchemaVersion(event.schemaVersion as string)) {
     errors.push({
@@ -87,7 +97,10 @@ function validateBaseFields(event: Record<string, unknown>): ValidationError[] {
   }
 
   if (typeof event.hash !== 'string' || !SHA256_PATTERN.test(event.hash)) {
-    errors.push({ field: 'hash', message: 'Must be a 64-character lowercase hex string (SHA-256).' });
+    errors.push({
+      field: 'hash',
+      message: 'Must be a 64-character lowercase hex string (SHA-256).',
+    });
   }
 
   if (!isNonEmptyString(event.source)) {
@@ -107,7 +120,10 @@ function validateMessagePayload(payload: Record<string, unknown>): ValidationErr
   const errors: ValidationError[] = [];
 
   if (!VALID_MESSAGE_ROLES.includes(payload.role as never)) {
-    errors.push({ field: 'payload.role', message: `Must be one of: ${VALID_MESSAGE_ROLES.join(', ')}.` });
+    errors.push({
+      field: 'payload.role',
+      message: `Must be one of: ${VALID_MESSAGE_ROLES.join(', ')}.`,
+    });
   }
 
   if (typeof payload.content !== 'string') {
@@ -207,7 +223,10 @@ function validateArtifactPayload(payload: Record<string, unknown>): ValidationEr
   const errors: ValidationError[] = [];
 
   if (!VALID_ARTIFACT_ACTIONS.includes(payload.action as never)) {
-    errors.push({ field: 'payload.action', message: `Must be one of: ${VALID_ARTIFACT_ACTIONS.join(', ')}.` });
+    errors.push({
+      field: 'payload.action',
+      message: `Must be one of: ${VALID_ARTIFACT_ACTIONS.join(', ')}.`,
+    });
   }
 
   if (!isNonEmptyString(payload.uri)) {
@@ -237,7 +256,10 @@ function validateSystemPayload(payload: Record<string, unknown>): ValidationErro
   const errors: ValidationError[] = [];
 
   if (!VALID_SYSTEM_ACTIONS.includes(payload.action as never)) {
-    errors.push({ field: 'payload.action', message: `Must be one of: ${VALID_SYSTEM_ACTIONS.join(', ')}.` });
+    errors.push({
+      field: 'payload.action',
+      message: `Must be one of: ${VALID_SYSTEM_ACTIONS.join(', ')}.`,
+    });
   }
 
   if (payload.message !== undefined && typeof payload.message !== 'string') {
@@ -287,13 +309,12 @@ export function validateEvent(event: unknown): ValidationError[] {
   }
 
   // Hash integrity (only if base fields are well-formed enough to compute)
-  if (
-    errors.length === 0 &&
-    typeof event.hash === 'string' &&
-    SHA256_PATTERN.test(event.hash)
-  ) {
+  if (errors.length === 0 && typeof event.hash === 'string' && SHA256_PATTERN.test(event.hash)) {
     if (!verifyEventHash(event as Parameters<typeof verifyEventHash>[0])) {
-      errors.push({ field: 'hash', message: 'Content hash does not match. Event may have been modified.' });
+      errors.push({
+        field: 'hash',
+        message: 'Content hash does not match. Event may have been modified.',
+      });
     }
   }
 

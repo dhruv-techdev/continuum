@@ -15,7 +15,9 @@ function requireActiveProject(root: string): { projectId: string } {
 
   if (!state.activeProjectId) {
     console.error('\n✗ No active project.');
-    console.error('  Run "continuum project select <id>" or "continuum project create -t <title>" first.\n');
+    console.error(
+      '  Run "continuum project select <id>" or "continuum project create -t <title>" first.\n',
+    );
     process.exit(1);
   }
 

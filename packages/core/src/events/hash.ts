@@ -29,9 +29,7 @@ export function canonicalize(value: unknown): string {
   if (typeof value === 'object') {
     const obj = value as Record<string, unknown>;
     const sortedKeys = Object.keys(obj).sort();
-    const pairs = sortedKeys.map(
-      (key) => `${JSON.stringify(key)}:${canonicalize(obj[key])}`,
-    );
+    const pairs = sortedKeys.map((key) => `${JSON.stringify(key)}:${canonicalize(obj[key])}`);
     return '{' + pairs.join(',') + '}';
   }
 

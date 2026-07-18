@@ -73,7 +73,10 @@ export function createProject(
   const root = projectsRoot(workspaceRoot);
 
   if (!existsSync(root)) {
-    return { data: null, error: `Projects directory not found at ${root}. Run "continuum init" first.` };
+    return {
+      data: null,
+      error: `Projects directory not found at ${root}. Run "continuum init" first.`,
+    };
   }
 
   const title = input.title.trim();
@@ -95,11 +98,7 @@ export function createProject(
   try {
     mkdirSync(dir, { recursive: true });
     mkdirSync(join(dir, 'sessions'), { recursive: true });
-    writeFileSync(
-      join(dir, PROJECT_MANIFEST),
-      JSON.stringify(project, null, 2) + '\n',
-      'utf-8',
-    );
+    writeFileSync(join(dir, PROJECT_MANIFEST), JSON.stringify(project, null, 2) + '\n', 'utf-8');
   } catch (err) {
     return { data: null, error: `Failed to create project: ${(err as Error).message}` };
   }

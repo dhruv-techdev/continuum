@@ -28,9 +28,7 @@ export function generateEventId(): string {
   return `evt_${randomUUID()}`;
 }
 
-export function createEvent<T extends EventType>(
-  input: CreateEventInput<T>,
-): EventForType<T> {
+export function createEvent<T extends EventType>(input: CreateEventInput<T>): EventForType<T> {
   const id = input.id ?? generateEventId();
   const timestamp = input.timestamp ?? new Date().toISOString();
 

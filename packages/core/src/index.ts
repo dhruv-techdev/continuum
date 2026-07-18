@@ -29,11 +29,7 @@ export {
   isWorkspaceInitialized,
 } from './workspace';
 
-export type {
-  ContinuumConfig,
-  InitResult,
-  LoadConfigResult,
-} from './workspace';
+export type { ContinuumConfig, InitResult, LoadConfigResult } from './workspace';
 
 // Events
 export * from './events/index';
@@ -42,11 +38,30 @@ export * from './events/index';
 export * from './projects/index';
 
 // Workspace state
-export {
-  getState,
-  setState,
-  setActiveProject,
-  setActiveSession,
-} from './state';
+export { getState, setState, setActiveProject, setActiveSession } from './state';
 
 export type { WorkspaceState } from './state';
+
+// Import
+export {
+  detectFormat,
+  parseTranscript,
+  parseJSON,
+  parseMarkdown,
+  normalizeToEvents,
+  writeEventsToLedger,
+  importTranscript,
+  WarningTypes,
+} from './import/index';
+
+export type {
+  ParsedMessage,
+  ParseResult,
+  TranscriptFormat,
+  ImportWarning,
+  ImportResult,
+  ImportStats,
+  WarningType,
+  NormalizeInput,
+  NormalizeOutput,
+} from './import/index';
