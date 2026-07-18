@@ -2,15 +2,16 @@
  * Normalizer: ParsedMessage[] → ContinuumEvent[]
  *
  * Maps parsed role strings to canonical MessageRole,
- * creates events via the factory, and writes them to
- * the session's event ledger on disk.
+ * creates events via the factory, and writes them through
+ * the EventLedger for immutable, deduplicated storage.
  */
 
-import { writeFileSync, appendFileSync, existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { ParseResult, ImportResult, ImportWarning } from './types';
 import { WarningTypes } from './types';
 import { createEvent, EventTypes, MessageRoles } from '../events/index';
+import { openLedger } from '../ledger/event-ledger';
 import type { MessageRole, ContinuumEvent } from '../events/types';
 
 // ─── Role mapping ───────────────────────────────────────────
@@ -21,7 +22,7 @@ const ROLE_MAP: Record<string, MessageRole> = {
   system: MessageRoles.SYSTEM,
 };
 
-function mapRole(parsed: string, index: number, warnings: ImportWarning[]): MessageRole | null {
+function mapRole(parsed: string, index: number, warnings: ImportWarning[]): MessageRole {
   const mapped = ROLE_MAP[parsed];
   if (mapped) return mapped;
 
@@ -41,6 +42,7 @@ export interface NormalizeInput {
   projectId: string;
   sessionId: string;
   source: string;
+  startSequence?: number;
 }
 
 export interface NormalizeOutput {
@@ -54,33 +56,27 @@ export interface NormalizeOutput {
 }
 
 export function normalizeToEvents(input: NormalizeInput): NormalizeOutput {
-  const { parseResult, projectId, sessionId, source } = input;
+  const { parseResult, projectId, sessionId, source, startSequence = 0 } = input;
   const warnings: ImportWarning[] = [...parseResult.warnings];
   const events: ContinuumEvent[] = [];
-  let skipped = 0;
+  const skipped = 0;
 
   for (let i = 0; i < parseResult.messages.length; i++) {
     const msg = parseResult.messages[i];
+    const sequence = startSequence + i;
 
     const role = mapRole(msg.role, i, warnings);
-    if (!role) {
-      skipped++;
-      continue;
-    }
 
     const metadata: Record<string, unknown> = {};
 
-    // Preserve unmapped fields in metadata
     if (Object.keys(msg.unmappedFields).length > 0) {
       metadata.originalFields = msg.unmappedFields;
     }
 
-    // Preserve original role if it was coerced
     if (!ROLE_MAP[msg.role]) {
       metadata.originalRole = msg.role;
     }
 
-    // Preserve detected provider
     if (parseResult.detectedProvider) {
       metadata.detectedProvider = parseResult.detectedProvider;
     }
@@ -89,7 +85,7 @@ export function normalizeToEvents(input: NormalizeInput): NormalizeOutput {
       type: EventTypes.MESSAGE,
       projectId,
       sessionId,
-      sequence: i,
+      sequence,
       source,
       payload: {
         role,
@@ -112,7 +108,7 @@ export function normalizeToEvents(input: NormalizeInput): NormalizeOutput {
   };
 }
 
-// ─── Write events to ledger ─────────────────────────────────
+// ─── Legacy compatibility wrapper (used by US-005 tests) ────
 
 export function writeEventsToLedger(
   workspaceRoot: string,
@@ -120,16 +116,8 @@ export function writeEventsToLedger(
   sessionId: string,
   events: ContinuumEvent[],
 ): void {
-  const sessionDir = join(workspaceRoot, 'projects', projectId, 'sessions', sessionId);
-  const ledgerPath = join(sessionDir, 'events.jsonl');
-
-  const lines = events.map((e) => JSON.stringify(e)).join('\n');
-
-  if (existsSync(ledgerPath)) {
-    appendFileSync(ledgerPath, lines + '\n', 'utf-8');
-  } else {
-    writeFileSync(ledgerPath, lines + '\n', 'utf-8');
-  }
+  const ledger = openLedger(workspaceRoot, projectId, sessionId);
+  ledger.appendBatch(events);
 }
 
 // ─── End-to-end import ──────────────────────────────────────
@@ -141,25 +129,43 @@ export function importTranscript(
   parseResult: ParseResult,
   source: string,
 ): ImportResult {
+  const ledger = openLedger(workspaceRoot, projectId, sessionId);
+  const startSequence = ledger.lastSequence() + 1;
+
   const { events, warnings, stats } = normalizeToEvents({
     parseResult,
     projectId,
     sessionId,
     source,
+    startSequence,
   });
 
+  let appendedCount = 0;
+  let duplicatesSkipped = 0;
+
   if (events.length > 0) {
-    writeEventsToLedger(workspaceRoot, projectId, sessionId, events);
+    const batchResult = ledger.appendBatch(events);
+    appendedCount = batchResult.appended;
+    duplicatesSkipped = batchResult.duplicatesSkipped;
+
+    for (const err of batchResult.errors) {
+      warnings.push({
+        type: WarningTypes.INACCESSIBLE,
+        field: `event[${err.eventId}]`,
+        message: err.error ?? `Failed to append event (status: ${err.status}).`,
+      });
+    }
   }
 
-  // Update session eventCount
-  updateSessionEventCount(workspaceRoot, projectId, sessionId, events.length);
+  updateSessionEventCount(workspaceRoot, projectId, sessionId, appendedCount);
 
   return {
-    eventCount: events.length,
+    eventCount: appendedCount,
     warnings,
     stats: {
-      ...stats,
+      totalParsed: stats.totalParsed,
+      eventsCreated: appendedCount,
+      skipped: stats.skipped + duplicatesSkipped,
       warningCount: warnings.length,
     },
   };

@@ -42,6 +42,18 @@ export { getState, setState, setActiveProject, setActiveSession } from './state'
 
 export type { WorkspaceState } from './state';
 
+// Ledger
+export { EventLedger, openLedger } from './ledger/index';
+
+export type {
+  AppendStatus,
+  AppendResult,
+  AppendBatchResult,
+  LedgerReadResult,
+  LedgerStats,
+  IntegrityIssue,
+} from './ledger/index';
+
 // Import
 export {
   detectFormat,
@@ -49,7 +61,6 @@ export {
   parseJSON,
   parseMarkdown,
   normalizeToEvents,
-  writeEventsToLedger,
   importTranscript,
   WarningTypes,
 } from './import/index';
