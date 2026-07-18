@@ -2,8 +2,10 @@
 
 import { Command } from 'commander';
 import { VERSION, PRODUCT_NAME, DESCRIPTION } from '@continuum/core';
-import { registerDoctorCommand } from './commands/doctor';
 import { registerInitCommand } from './commands/init';
+import { registerDoctorCommand } from './commands/doctor';
+import { registerProjectCommand } from './commands/project';
+import { registerSessionCommand } from './commands/session';
 
 const program = new Command();
 
@@ -14,5 +16,7 @@ program
 
 registerInitCommand(program);
 registerDoctorCommand(program);
+registerProjectCommand(program);
+registerSessionCommand(program);
 
 program.parse();

@@ -37,3 +37,16 @@ export type {
 
 // Events
 export * from './events/index';
+
+// Projects and sessions
+export * from './projects/index';
+
+// Workspace state
+export {
+  getState,
+  setState,
+  setActiveProject,
+  setActiveSession,
+} from './state';
+
+export type { WorkspaceState } from './state';
