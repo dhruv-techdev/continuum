@@ -92,6 +92,20 @@ export type {
   BootstrapContext,
 } from './state-engine/index';
 
+// Capture
+export {
+  ingestRawEvents,
+  ingestFromFile,
+  quickCapture,
+  updateSessionAfterCapture,
+} from './capture/index';
+
+export type {
+  CaptureResult,
+  CaptureError,
+  QuickCaptureInput,
+} from './capture/index';
+
 // Import
 export {
   detectFormat,
