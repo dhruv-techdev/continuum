@@ -1,0 +1,14 @@
+{
+  "name": "@continuum/web",
+  "version": "0.1.0",
+  "description": "Web dashboard for Continuum",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@continuum/core": "workspace:*"
+  }
+}
