@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { accessSync, mkdirSync, constants } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
-import { VERSION, MIN_NODE_VERSION } from '@continuum/core';
+import { VERSION, MIN_NODE_VERSION, isWorkspaceInitialized, loadConfig, DEFAULT_ROOT } from '@continuum/core';
 import type { CheckResult } from '@continuum/core';
 
 export function runChecks(): CheckResult[] {
@@ -23,10 +23,7 @@ export function runChecks(): CheckResult[] {
 
   // 2. pnpm
   try {
-    const pnpmVersion = execSync('pnpm --version', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+    const pnpmVersion = execSync('pnpm --version', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
     checks.push({ name: 'pnpm', status: 'pass', message: `v${pnpmVersion}` });
   } catch {
     checks.push({ name: 'pnpm', status: 'warn', message: 'not found (optional)' });
@@ -34,10 +31,7 @@ export function runChecks(): CheckResult[] {
 
   // 3. TypeScript
   try {
-    const tsOutput = execSync('npx tsc --version', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+    const tsOutput = execSync('npx tsc --version', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
     checks.push({ name: 'TypeScript', status: 'pass', message: tsOutput });
   } catch {
     checks.push({ name: 'TypeScript', status: 'fail', message: 'not found' });
@@ -51,6 +45,30 @@ export function runChecks(): CheckResult[] {
     checks.push({ name: 'Data directory', status: 'pass', message: `${dataDir} (writable)` });
   } catch {
     checks.push({ name: 'Data directory', status: 'fail', message: `${dataDir} (not writable)` });
+  }
+
+  // 5. Workspace initialized
+  if (isWorkspaceInitialized(DEFAULT_ROOT)) {
+    const { config, errors } = loadConfig(DEFAULT_ROOT);
+    if (errors.length > 0) {
+      checks.push({
+        name: 'Workspace',
+        status: 'warn',
+        message: `Initialized but config has ${errors.length} issue(s). Run "continuum init --force".`,
+      });
+    } else {
+      checks.push({
+        name: 'Workspace',
+        status: 'pass',
+        message: `v${config!.version} — local-only: ${config!.privacy.localOnly}`,
+      });
+    }
+  } else {
+    checks.push({
+      name: 'Workspace',
+      status: 'warn',
+      message: 'Not initialized. Run "continuum init".',
+    });
   }
 
   return checks;
@@ -67,9 +85,7 @@ export function formatChecks(checks: CheckResult[]): string {
   }
 
   lines.push('');
-  lines.push(
-    hasFailure ? 'Some checks failed. Please fix the issues above.\n' : 'All checks passed.\n',
-  );
+  lines.push(hasFailure ? 'Some checks failed. Please fix the issues above.\n' : 'All checks passed.\n');
 
   return lines.join('\n');
 }
