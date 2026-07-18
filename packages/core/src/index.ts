@@ -12,6 +12,12 @@ export interface CheckResult {
   message: string;
 }
 
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+// Workspace
 export {
   DEFAULT_ROOT,
   WORKSPACE_DIRS,
@@ -25,7 +31,9 @@ export {
 
 export type {
   ContinuumConfig,
-  ValidationError,
   InitResult,
   LoadConfigResult,
 } from './workspace';
+
+// Events
+export * from './events/index';
