@@ -1,5 +1,7 @@
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 import { Command } from 'commander';
-import { initWorkspace, loadConfig, isWorkspaceInitialized, DEFAULT_ROOT, WORKSPACE_DIRS } from '@continuum/core';
+import { initWorkspace, loadConfig, DEFAULT_ROOT } from '@continuum/core';
 
 function formatInitResult(result: ReturnType<typeof initWorkspace>): string {
   const lines: string[] = [];
@@ -57,11 +59,9 @@ export function registerInitCommand(program: Command): void {
 
       // If force, we blow past the alreadyExists check by removing config first
       if (opts.force) {
-        const fs = require('fs');
-        const path = require('path');
-        const configPath = path.join(root, 'config.json');
-        if (fs.existsSync(configPath)) {
-          fs.unlinkSync(configPath);
+        const configPath = join(root, 'config.json');
+        if (existsSync(configPath)) {
+          unlinkSync(configPath);
         }
       }
 
