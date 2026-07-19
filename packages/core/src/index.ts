@@ -115,6 +115,31 @@ export type {
   CorrelationReport,
 } from './capture/index';
 
+// Artifacts
+export {
+  generateArtifactId,
+  StorageModes,
+  ArtifactStatuses,
+  detectMimeType,
+  hashFileContent,
+  loadRegistry,
+  saveRegistry,
+  findArtifactByUri,
+  findArtifactById,
+  listArtifacts,
+  registerArtifact,
+  linkEventToArtifact,
+  deleteArtifact,
+} from './artifacts/index';
+
+export type {
+  StorageMode,
+  ArtifactStatus,
+  ArtifactEntry,
+  RegisterArtifactInput,
+  RegisterResult,
+} from './artifacts/index';
+
 // Import
 export {
   detectFormat,

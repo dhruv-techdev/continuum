@@ -10,6 +10,7 @@ import { registerImportCommand } from './commands/import';
 import { registerVerifyLedgerCommand } from './commands/verify-ledger';
 import { registerStateCommand } from './commands/state';
 import { registerCaptureCommand } from './commands/capture';
+import { registerArtifactCommand } from './commands/artifact';
 
 const program = new Command();
 
@@ -26,5 +27,6 @@ registerImportCommand(program);
 registerVerifyLedgerCommand(program);
 registerStateCommand(program);
 registerCaptureCommand(program);
+registerArtifactCommand(program);
 
 program.parse();
