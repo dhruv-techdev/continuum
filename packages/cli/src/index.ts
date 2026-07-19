@@ -11,6 +11,7 @@ import { registerVerifyLedgerCommand } from './commands/verify-ledger';
 import { registerStateCommand } from './commands/state';
 import { registerCaptureCommand } from './commands/capture';
 import { registerArtifactCommand } from './commands/artifact';
+import { registerDbCommand } from './commands/db';
 
 const program = new Command();
 
@@ -28,5 +29,6 @@ registerVerifyLedgerCommand(program);
 registerStateCommand(program);
 registerCaptureCommand(program);
 registerArtifactCommand(program);
+registerDbCommand(program);
 
 program.parse();
