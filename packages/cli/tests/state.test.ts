@@ -57,7 +57,7 @@ describe('continuum state', () => {
     });
 
     it('should show provenance links', () => {
-      const output = run('state show', root);
+      const output = run('state show --provenance', root);
       // Should contain truncated event IDs
       expect(output).toContain('evt_');
     });

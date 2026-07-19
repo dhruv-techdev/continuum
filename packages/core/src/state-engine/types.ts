@@ -1,15 +1,18 @@
 /**
- * Working state model for Continuum.
+ * Evidence-linked structured state model.
  *
- * Every statement is evidence-linked: it carries the IDs of the
- * source events it was derived from. No statement exists without
- * provenance (ST2).
+ * Every statement tracks:
+ *   - Category (ST1): what kind of information it is
+ *   - Confidence (ST2): how certain the extraction is
+ *   - Status (ST2): whether it's active, superseded, or corrected
+ *   - Source IDs (ST2): which events it was derived from
  */
 
 // ─── Statement categories (ST1) ─────────────────────────────
 
 export const StatementCategories = {
   OBJECTIVE: 'objective',
+  REQUIREMENT: 'requirement',
   CONSTRAINT: 'constraint',
   DECISION: 'decision',
   NEXT_ACTION: 'next_action',
@@ -21,7 +24,9 @@ export const StatementCategories = {
 
 export type StatementCategory = (typeof StatementCategories)[keyof typeof StatementCategories];
 
-// ─── Confidence ─────────────────────────────────────────────
+export const VALID_CATEGORIES: readonly StatementCategory[] = Object.values(StatementCategories);
+
+// ─── Confidence (ST2) ───────────────────────────────────────
 
 export const ConfidenceLevels = {
   HIGH: 'high',
@@ -31,60 +36,83 @@ export const ConfidenceLevels = {
 
 export type ConfidenceLevel = (typeof ConfidenceLevels)[keyof typeof ConfidenceLevels];
 
-// ─── Statement (ST2 — every statement links to sources) ─────
+// ─── Statement status (ST2) ─────────────────────────────────
+
+export const StatementStatuses = {
+  ACTIVE: 'active',
+  SUPERSEDED: 'superseded',
+  REJECTED: 'rejected',
+  USER_CORRECTED: 'user_corrected',
+} as const;
+
+export type StatementStatus = (typeof StatementStatuses)[keyof typeof StatementStatuses];
+
+// ─── Statement (ST1 + ST2) ──────────────────────────────────
 
 export interface Statement {
   id: string;
   category: StatementCategory;
   text: string;
   confidence: ConfidenceLevel;
+  status: StatementStatus;
   /** Event IDs this statement was derived from (ST2) */
   sourceEventIds: string[];
   /** Sequence number of the primary source event */
   sourceSequence: number;
   /** ISO timestamp of extraction */
   extractedAt: string;
+  /** If superseded or corrected, the ID of the replacing statement */
+  replacedBy: string | null;
+  /** If this is a correction, the ID of the statement it corrects */
+  corrects: string | null;
+  /** User-provided note on why this was corrected/rejected */
+  correctionNote: string | null;
 }
 
-// ─── Working state (ST1) ────────────────────────────────────
+// ─── Working state ──────────────────────────────────────────
 
 export interface WorkingState {
   projectId: string;
   sessionIds: string[];
   extractedAt: string;
   totalEventsProcessed: number;
+  /** Schema version for forward compatibility */
+  stateVersion: number;
 
-  /** Primary goal of the project/conversation */
   objectives: Statement[];
-  /** Hard requirements and prohibitions */
+  requirements: Statement[];
   constraints: Statement[];
-  /** Choices made (active decisions) */
   decisions: Statement[];
-  /** Immediate next steps */
   nextActions: Statement[];
-  /** Work already completed */
   completed: Statement[];
-  /** Approaches that failed */
   failures: Statement[];
-  /** Things assumed to be true */
   assumptions: Statement[];
-  /** Unresolved questions */
   openQuestions: Statement[];
 }
 
-// ─── Bootstrap context layers (ST3) ─────────────────────────
+// ─── Bootstrap context layers ───────────────────────────────
 
 export interface BootstrapContext {
-  /** L0 — Project identity and one-paragraph purpose */
   orientation: string;
-  /** L1 — Objective, current task, progress, blockers, next actions */
   activeState: string;
-  /** L2 — Constraints, confirmed decisions, rejected paths */
   governingContext: string;
-  /** Full combined text for injection into a prompt */
   combined: string;
-  /** Metadata */
   statementCount: number;
   eventsCovered: number;
   generatedAt: string;
+}
+
+// ─── Correction input ───────────────────────────────────────
+
+export interface CorrectionInput {
+  /** ID of the statement to correct */
+  statementId: string;
+  /** New text (if correcting content) */
+  newText?: string;
+  /** New category (if reclassifying) */
+  newCategory?: StatementCategory;
+  /** New confidence */
+  newConfidence?: ConfidenceLevel;
+  /** Reason for correction */
+  note: string;
 }

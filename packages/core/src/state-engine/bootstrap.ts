@@ -1,46 +1,27 @@
-/**
- * Bootstrap context generator.
- *
- * Produces a layered text package that can be injected into
- * a fresh session's system prompt or first message so the
- * receiving agent understands the project state.
- *
- * Layers follow the product spec:
- *   L0 — Orientation (project identity)
- *   L1 — Active state (objective, progress, blockers, next)
- *   L2 — Governing context (constraints, decisions, failures)
- */
-
 import type { WorkingState, Statement, BootstrapContext } from './types';
+import { StatementStatuses } from './types';
 import type { Project } from '../projects/types';
 
-// ─── Helpers ────────────────────────────────────────────────
-
 function formatStatements(statements: Statement[], label: string): string {
-  if (statements.length === 0) return '';
+  const active = statements.filter((s) => s.status === StatementStatuses.ACTIVE);
+  if (active.length === 0) return '';
 
   const lines = [`### ${label}`];
-  for (const s of statements) {
+  for (const s of active) {
     const conf = s.confidence === 'high' ? '' : ` [${s.confidence} confidence]`;
     lines.push(`- ${s.text}${conf}`);
   }
   return lines.join('\n');
 }
 
-function countStatements(state: WorkingState): number {
-  return (
-    state.objectives.length +
-    state.constraints.length +
-    state.decisions.length +
-    state.nextActions.length +
-    state.completed.length +
-    state.failures.length +
-    state.assumptions.length +
-    state.openQuestions.length
-  );
+function countActive(state: WorkingState): number {
+  const all = [
+    ...state.objectives, ...state.requirements, ...state.constraints,
+    ...state.decisions, ...state.nextActions, ...state.completed,
+    ...state.failures, ...state.assumptions, ...state.openQuestions,
+  ];
+  return all.filter((s) => s.status === StatementStatuses.ACTIVE).length;
 }
-
-// ─── L0: Orientation ────────────────────────────────────────
 
 function buildOrientation(project: Project, state: WorkingState): string {
   const lines: string[] = [
@@ -56,86 +37,54 @@ function buildOrientation(project: Project, state: WorkingState): string {
   lines.push(`**Sessions:** ${state.sessionIds.length}`);
   lines.push(`**Events processed:** ${state.totalEventsProcessed}`);
 
-  // Summarize the primary objective if we have one
-  if (state.objectives.length > 0) {
-    const primary = state.objectives[0];
-    lines.push('', `**Primary objective:** ${primary.text}`);
+  const activeObj = state.objectives.filter((o) => o.status === StatementStatuses.ACTIVE);
+  if (activeObj.length > 0) {
+    lines.push('', `**Primary objective:** ${activeObj[0].text}`);
   }
 
   return lines.join('\n');
 }
 
-// ─── L1: Active state ───────────────────────────────────────
-
 function buildActiveState(state: WorkingState): string {
   const sections: string[] = ['## L1 — Active State', ''];
 
-  // Objectives
-  if (state.objectives.length > 0) {
-    sections.push(formatStatements(state.objectives, 'Objectives'));
-    sections.push('');
-  }
+  const parts = [
+    formatStatements(state.objectives, 'Objectives'),
+    formatStatements(state.requirements, 'Requirements'),
+    formatStatements(state.completed, 'Completed Work'),
+    formatStatements(state.nextActions, 'Next Actions'),
+    formatStatements(state.openQuestions, 'Open Questions'),
+  ].filter((s) => s.length > 0);
 
-  // Completed work (progress indicator)
-  if (state.completed.length > 0) {
-    sections.push(formatStatements(state.completed, 'Completed Work'));
-    sections.push('');
-  }
-
-  // Next actions
-  if (state.nextActions.length > 0) {
-    sections.push(formatStatements(state.nextActions, 'Next Actions'));
-    sections.push('');
-  }
-
-  // Open questions (blockers)
-  if (state.openQuestions.length > 0) {
-    sections.push(formatStatements(state.openQuestions, 'Open Questions'));
-    sections.push('');
-  }
-
-  if (sections.length === 2) {
+  if (parts.length === 0) {
     sections.push('No active state extracted from conversation history.');
-    sections.push('');
+  } else {
+    sections.push(...parts.flatMap((p) => [p, '']));
   }
 
+  sections.push('');
   return sections.join('\n');
 }
-
-// ─── L2: Governing context ──────────────────────────────────
 
 function buildGoverningContext(state: WorkingState): string {
   const sections: string[] = ['## L2 — Governing Context', ''];
 
-  if (state.constraints.length > 0) {
-    sections.push(formatStatements(state.constraints, 'Constraints & Requirements'));
-    sections.push('');
-  }
+  const parts = [
+    formatStatements(state.constraints, 'Constraints & Prohibitions'),
+    formatStatements(state.decisions, 'Decisions Made'),
+    formatStatements(state.failures, 'Failed Approaches (avoid repeating)'),
+    formatStatements(state.assumptions, 'Assumptions'),
+  ].filter((s) => s.length > 0);
 
-  if (state.decisions.length > 0) {
-    sections.push(formatStatements(state.decisions, 'Decisions Made'));
-    sections.push('');
-  }
-
-  if (state.failures.length > 0) {
-    sections.push(formatStatements(state.failures, 'Failed Approaches (avoid repeating)'));
-    sections.push('');
-  }
-
-  if (state.assumptions.length > 0) {
-    sections.push(formatStatements(state.assumptions, 'Assumptions'));
-    sections.push('');
-  }
-
-  if (sections.length === 2) {
+  if (parts.length === 0) {
     sections.push('No governing context extracted from conversation history.');
-    sections.push('');
+  } else {
+    sections.push(...parts.flatMap((p) => [p, '']));
   }
 
+  sections.push('');
   return sections.join('\n');
 }
-
-// ─── Build complete bootstrap ───────────────────────────────
 
 export function generateBootstrap(
   project: Project,
@@ -157,7 +106,7 @@ export function generateBootstrap(
     governingContext,
     '---',
     `Generated at: ${new Date().toISOString()}`,
-    `Statements extracted: ${countStatements(state)}`,
+    `Active statements: ${countActive(state)}`,
     `Events covered: ${state.totalEventsProcessed}`,
   ].join('\n');
 
@@ -166,7 +115,7 @@ export function generateBootstrap(
     activeState,
     governingContext,
     combined,
-    statementCount: countStatements(state),
+    statementCount: countActive(state),
     eventsCovered: state.totalEventsProcessed,
     generatedAt: new Date().toISOString(),
   };
