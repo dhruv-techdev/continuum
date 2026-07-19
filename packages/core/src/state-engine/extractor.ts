@@ -91,7 +91,7 @@ function splitSentences(text: string): string[] {
 }
 
 export function generateStatementId(): string {
-  return `stmt_${randomUUID().slice(0, 12)}`;
+  return `stmt_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 }
 
 function createStatement(
