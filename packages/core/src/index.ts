@@ -31,7 +31,6 @@ export type { StorageMode, ArtifactStatus, ArtifactEntry, RegisterArtifactInput,
 export { SCHEMA_VERSION, MetadataDB, openDB, closeDB, closeAllDBs, dbPath, syncProject, syncProjects, syncSession, syncSessions, syncEvent, syncEvents, getWatermark, setWatermark, syncArtifact, syncArtifacts, countEvents, countAllEvents, searchEvents, recoverSession, recoverWorkspace, ensureFTS, extractContent, indexEvent, indexEvents, search, countIndexed, getTimeline, getEventById, getEventsByIds, getDistinctTypes, getDistinctSources, getTimeRange } from './db/index';
 export type { RecoveryResult, SearchResult, SearchOptions, TimelineFilter, TimelineEntry, TimelineResult } from './db/index';
 
-// Tracking
 export { DecisionStatuses, generateDecisionId, loadDecisions, createDecision, rejectDecision, supersedeDecision, listDecisions, getDecision } from './tracking/index';
 export type { DecisionStatus, Decision, CreateDecisionInput } from './tracking/index';
 
@@ -40,6 +39,10 @@ export type { TaskStatus, Task, CreateTaskInput } from './tracking/index';
 
 export { AttemptOutcomes, generateAttemptId, loadAttempts, recordAttempt, listAttempts, getFailedAttempts, getAttempt } from './tracking/index';
 export type { AttemptOutcome, Attempt, CreateAttemptInput } from './tracking/index';
+
+// Capsule
+export { CAPSULE_SCHEMA_VERSION, buildManifest, validateManifest, isCompatibleCapsuleVersion } from './capsule/index';
+export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, CapsuleStateSection, CapsuleTrackingSection, CapsuleTrackingFile, CapsuleArtifactSection, CapsuleEvaluationSection, CapsuleEvaluationSummary, CapsuleIntegritySection, CapsuleFileHash, CapsuleRedactionSummary, ManifestValidationError, BuildManifestInput } from './capsule/index';
 
 export { detectFormat, parseTranscript, parseJSON, parseMarkdown, normalizeToEvents, writeEventsToLedger, importTranscript, WarningTypes } from './import/index';
 export type { ParsedMessage, ParseResult, TranscriptFormat, ImportWarning, ImportResult, ImportStats, WarningType, NormalizeInput, NormalizeOutput } from './import/index';

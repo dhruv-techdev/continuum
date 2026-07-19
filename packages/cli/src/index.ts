@@ -16,6 +16,7 @@ import { registerSearchCommand } from './commands/search';
 import { registerTimelineCommand } from './commands/timeline';
 import { registerEventCommand } from './commands/event';
 import { registerTrackCommand } from './commands/track';
+import { registerCapsuleCommand } from './commands/capsule';
 
 const program = new Command();
 
@@ -38,5 +39,6 @@ registerSearchCommand(program);
 registerTimelineCommand(program);
 registerEventCommand(program);
 registerTrackCommand(program);
+registerCapsuleCommand(program);
 
 program.parse();
