@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 export function generateArtifactId(): string {
-  return `art_${randomUUID().slice(0, 12)}`;
+  return `art_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 }
 
 // ─── Storage mode (ST3) ─────────────────────────────────────
