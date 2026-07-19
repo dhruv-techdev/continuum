@@ -98,12 +98,21 @@ export {
   ingestFromFile,
   quickCapture,
   updateSessionAfterCapture,
+  generateCallId,
+  correlateEvents,
+  findToolResult,
+  findCommandOutput,
+  findToolCall,
 } from './capture/index';
 
 export type {
   CaptureResult,
   CaptureError,
   QuickCaptureInput,
+  ToolPair,
+  CommandPair,
+  CorrelatedPair,
+  CorrelationReport,
 } from './capture/index';
 
 // Import

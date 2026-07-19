@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { existsSync, readFileSync } from 'fs';
 import {
   DEFAULT_ROOT,
   getState,
@@ -13,10 +12,12 @@ import {
   ingestFromFile,
   ingestRawEvents,
   updateSessionAfterCapture,
+  generateCallId,
+  openLedger,
 } from '@continuum/core';
-import type { CaptureResult, EventType } from '@continuum/core';
+import type { CaptureResult } from '@continuum/core';
 
-// ─── ST2: Require active project + session ──────────────────
+// ─── Context resolution (ST2) ───────────────────────────────
 
 function resolveContext(root: string, opts: { project?: string; session?: string }) {
   const ws = getState(root);
@@ -36,7 +37,6 @@ function resolveContext(root: string, opts: { project?: string; session?: string
 
   let sessionId = opts.session ?? ws.activeSessionId;
 
-  // Auto-start a session if none is active
   if (!sessionId) {
     const result = startSession(root, { projectId, provider: 'cli', model: 'manual' });
     if (result.error) {
@@ -137,14 +137,107 @@ export function registerCaptureCommand(program: Command): void {
         sessionId,
         type: EventTypes.MESSAGE,
         source: opts.source,
-        payload: { role: role as 'user' | 'assistant' | 'system', content: opts.content },
+        payload: { role, content: opts.content },
       });
 
       updateSessionAfterCapture(opts.root, projectId, sessionId, result.appended);
       console.log(formatResult(result, false));
     });
 
-  // ── capture command ─────────────────────────────────────
+  // ── capture tool-call (ST1 + ST3) ───────────────────────
+
+  capture
+    .command('tool-call')
+    .description('Capture a tool call event')
+    .requiredOption('-n, --name <toolName>', 'Tool name')
+    .option('-i, --input <json>', 'Tool input as JSON', '{}')
+    .option('--call-id <id>', 'Correlation ID (auto-generated if omitted)')
+    .option('--source <name>', 'Event source', 'cli')
+    .option('--project <id>', 'Project ID')
+    .option('--session <id>', 'Session ID')
+    .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
+    .action((opts) => {
+      const { projectId, sessionId } = resolveContext(opts.root, opts);
+
+      let input: Record<string, unknown>;
+      try {
+        input = JSON.parse(opts.input);
+      } catch {
+        console.error('\n✗ --input must be valid JSON.\n');
+        process.exit(1);
+      }
+
+      const callId = opts.callId ?? generateCallId();
+
+      const result = quickCapture({
+        workspaceRoot: opts.root,
+        projectId,
+        sessionId,
+        type: EventTypes.TOOL_CALL,
+        source: opts.source,
+        payload: { toolName: opts.name, input, callId },
+      });
+
+      updateSessionAfterCapture(opts.root, projectId, sessionId, result.appended);
+
+      if (result.appended > 0) {
+        console.log(`\n✓ Tool call captured (callId: ${callId})\n`);
+        console.log(`  Tool:    ${opts.name}`);
+        console.log(`  Call ID: ${callId}`);
+        console.log(`\n  Use this callId with "capture tool-result --call-id ${callId}" to record the result.\n`);
+      } else {
+        console.log(formatResult(result, false));
+      }
+    });
+
+  // ── capture tool-result (ST1 + ST3) ─────────────────────
+
+  capture
+    .command('tool-result')
+    .description('Capture a tool result event')
+    .requiredOption('-n, --name <toolName>', 'Tool name')
+    .requiredOption('-o, --output <text>', 'Tool output')
+    .option('--call-id <id>', 'Correlation ID linking to the tool call')
+    .option('--is-error', 'Mark this result as an error', false)
+    .option('--source <name>', 'Event source', 'cli')
+    .option('--project <id>', 'Project ID')
+    .option('--session <id>', 'Session ID')
+    .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
+    .action((opts) => {
+      const { projectId, sessionId } = resolveContext(opts.root, opts);
+
+      const payload: Record<string, unknown> = {
+        toolName: opts.name,
+        output: opts.output,
+      };
+
+      if (opts.callId) payload.callId = opts.callId;
+      if (opts.isError) payload.isError = true;
+
+      const result = quickCapture({
+        workspaceRoot: opts.root,
+        projectId,
+        sessionId,
+        type: EventTypes.TOOL_RESULT,
+        source: opts.source,
+        payload,
+      });
+
+      updateSessionAfterCapture(opts.root, projectId, sessionId, result.appended);
+
+      if (result.appended > 0) {
+        const link = opts.callId ? ` (linked to callId: ${opts.callId})` : ' (no callId — unlinked)';
+        console.log(`\n✓ Tool result captured${link}\n`);
+        console.log(`  Tool:     ${opts.name}`);
+        console.log(`  Error:    ${opts.isError}`);
+        if (opts.callId) console.log(`  Call ID:  ${opts.callId}`);
+        console.log('');
+      } else {
+        console.log(formatResult(result, false));
+      }
+    });
+
+  // ── capture command (ST2) ───────────────────────────────
 
   capture
     .command('command')
@@ -161,7 +254,6 @@ export function registerCaptureCommand(program: Command): void {
     .action((opts) => {
       const { projectId, sessionId } = resolveContext(opts.root, opts);
 
-      // Capture the command event
       const cmdResult = quickCapture({
         workspaceRoot: opts.root,
         projectId,
@@ -175,9 +267,19 @@ export function registerCaptureCommand(program: Command): void {
       });
 
       let totalAppended = cmdResult.appended;
+      let commandEventId: string | null = null;
 
-      // If output was provided, capture a command_output event too
-      if (cmdResult.appended > 0 && (opts.stdout || opts.stderr || opts.exitCode !== undefined)) {
+      // Get the event ID of the command we just captured for correlation (ST3)
+      if (cmdResult.appended > 0) {
+        const ledger = openLedger(opts.root, projectId, sessionId);
+        const lastEvent = ledger.getEvent(
+          ledger.readAll().events[ledger.readAll().events.length - 1]?.id ?? '',
+        );
+        commandEventId = lastEvent?.id ?? null;
+      }
+
+      // If output was provided, capture a correlated command_output event (ST3)
+      if (cmdResult.appended > 0 && commandEventId && (opts.stdout || opts.stderr || opts.exitCode !== undefined)) {
         const outputResult = quickCapture({
           workspaceRoot: opts.root,
           projectId,
@@ -185,7 +287,7 @@ export function registerCaptureCommand(program: Command): void {
           type: EventTypes.COMMAND_OUTPUT,
           source: opts.source,
           payload: {
-            commandEventId: 'previous',
+            commandEventId,
             ...(opts.stdout ? { stdout: opts.stdout } : {}),
             ...(opts.stderr ? { stderr: opts.stderr } : {}),
             ...(opts.exitCode !== undefined ? { exitCode: opts.exitCode } : {}),
@@ -196,12 +298,19 @@ export function registerCaptureCommand(program: Command): void {
 
       updateSessionAfterCapture(opts.root, projectId, sessionId, totalAppended);
 
-      const display: CaptureResult = {
-        ...cmdResult,
-        appended: totalAppended,
-        totalProcessed: opts.stdout || opts.stderr || opts.exitCode !== undefined ? 2 : 1,
-      };
-      console.log(formatResult(display, false));
+      if (totalAppended > 0) {
+        const hasOutput = opts.stdout || opts.stderr || opts.exitCode !== undefined;
+        console.log(`\n✓ Captured ${totalAppended} event(s) (command${hasOutput ? ' + output' : ''})\n`);
+        console.log(`  Command:  ${opts.cmd}`);
+        if (commandEventId) console.log(`  Event ID: ${commandEventId}`);
+        if (opts.exitCode !== undefined) console.log(`  Exit:     ${opts.exitCode}`);
+        if (hasOutput && commandEventId) {
+          console.log(`\n  Output linked via commandEventId: ${commandEventId}`);
+        }
+        console.log('');
+      } else {
+        console.log(formatResult(cmdResult, false));
+      }
     });
 
   // ── capture note ────────────────────────────────────────
