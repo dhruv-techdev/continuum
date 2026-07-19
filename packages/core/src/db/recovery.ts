@@ -1,16 +1,3 @@
-/**
- * Safe recovery after interrupted ingestion (ST3).
- *
- * Compares the JSONL ledger (source of truth) with the
- * SQLite index (sync_watermarks) and re-indexes any events
- * that were written to the ledger but not yet synced.
- *
- * This handles:
- *   - Process crash mid-sync
- *   - Database deletion (full re-index)
- *   - Manual ledger edits (detected via watermark mismatch)
- */
-
 import type { MetadataDB } from './database';
 import { openLedger } from '../ledger/event-ledger';
 import { listProjects } from '../projects/project-store';
@@ -24,19 +11,17 @@ import {
   getWatermark,
   setWatermark,
 } from './sync';
-
-// ─── Recovery result ────────────────────────────────────────
+import { ensureFTS, indexEvents } from './fts';
 
 export interface RecoveryResult {
   projectsSynced: number;
   sessionsSynced: number;
   eventsRecovered: number;
+  eventsIndexed: number;
   artifactsSynced: number;
   errors: string[];
   durationMs: number;
 }
-
-// ─── Recover a single session ───────────────────────────────
 
 export function recoverSession(
   db: MetadataDB,
@@ -46,13 +31,8 @@ export function recoverSession(
 ): { eventsRecovered: number; error: string | null } {
   const watermark = getWatermark(db, sessionId);
   const ledger = openLedger(workspaceRoot, projectId, sessionId);
-  const { events, integrityIssues } = ledger.readAll();
+  const { events } = ledger.readAll();
 
-  if (integrityIssues.length > 0) {
-    // Still sync what we can — integrity issues are logged, not fatal for indexing
-  }
-
-  // Find events beyond the watermark
   const unsyncedEvents = events.filter((e) => e.sequence > watermark);
 
   if (unsyncedEvents.length === 0) {
@@ -61,6 +41,7 @@ export function recoverSession(
 
   try {
     syncEvents(db, unsyncedEvents);
+    indexEvents(db, unsyncedEvents);
 
     const newWatermark = unsyncedEvents[unsyncedEvents.length - 1].sequence;
     setWatermark(db, sessionId, newWatermark);
@@ -74,8 +55,6 @@ export function recoverSession(
   }
 }
 
-// ─── Full workspace recovery ────────────────────────────────
-
 export function recoverWorkspace(
   db: MetadataDB,
   workspaceRoot: string,
@@ -85,10 +64,13 @@ export function recoverWorkspace(
     projectsSynced: 0,
     sessionsSynced: 0,
     eventsRecovered: 0,
+    eventsIndexed: 0,
     artifactsSynced: 0,
     errors: [],
     durationMs: 0,
   };
+
+  ensureFTS(db);
 
   const projects = listProjects(workspaceRoot);
 
@@ -101,7 +83,6 @@ export function recoverWorkspace(
       continue;
     }
 
-    // Sync sessions
     const sessions = listSessions(workspaceRoot, project.id);
     for (const session of sessions) {
       try {
@@ -112,15 +93,14 @@ export function recoverWorkspace(
         continue;
       }
 
-      // Recover events
       const { eventsRecovered, error } = recoverSession(
         db, workspaceRoot, project.id, session.id,
       );
       result.eventsRecovered += eventsRecovered;
+      result.eventsIndexed += eventsRecovered;
       if (error) result.errors.push(error);
     }
 
-    // Sync artifacts
     try {
       const artifacts = loadRegistry(workspaceRoot, project.id);
       if (artifacts.length > 0) {

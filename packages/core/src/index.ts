@@ -163,9 +163,15 @@ export {
   searchEvents,
   recoverSession,
   recoverWorkspace,
+  ensureFTS,
+  extractContent,
+  indexEvent,
+  indexEvents,
+  search,
+  countIndexed,
 } from './db/index';
 
-export type { RecoveryResult } from './db/index';
+export type { RecoveryResult, SearchResult, SearchOptions } from './db/index';
 
 // Import
 export {

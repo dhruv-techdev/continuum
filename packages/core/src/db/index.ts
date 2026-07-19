@@ -1,5 +1,7 @@
-export { SCHEMA_VERSION, CREATE_TABLES } from './schema';
+export { SCHEMA_VERSION } from './schema';
+
 export { MetadataDB, openDB, closeDB, closeAllDBs, dbPath } from './database';
+
 export {
   syncProject,
   syncProjects,
@@ -15,5 +17,18 @@ export {
   countAllEvents,
   searchEvents,
 } from './sync';
+
 export { recoverSession, recoverWorkspace } from './recovery';
+
 export type { RecoveryResult } from './recovery';
+
+export {
+  ensureFTS,
+  extractContent,
+  indexEvent,
+  indexEvents,
+  search,
+  countIndexed,
+} from './fts';
+
+export type { SearchResult, SearchOptions } from './fts';
