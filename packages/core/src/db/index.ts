@@ -32,3 +32,18 @@ export {
 } from './fts';
 
 export type { SearchResult, SearchOptions } from './fts';
+
+export {
+  getTimeline,
+  getEventById,
+  getEventsByIds,
+  getDistinctTypes,
+  getDistinctSources,
+  getTimeRange,
+} from './timeline';
+
+export type {
+  TimelineFilter,
+  TimelineEntry,
+  TimelineResult,
+} from './timeline';

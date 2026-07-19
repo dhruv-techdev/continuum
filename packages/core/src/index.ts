@@ -169,9 +169,22 @@ export {
   indexEvents,
   search,
   countIndexed,
+  getTimeline,
+  getEventById,
+  getEventsByIds,
+  getDistinctTypes,
+  getDistinctSources,
+  getTimeRange,
 } from './db/index';
 
-export type { RecoveryResult, SearchResult, SearchOptions } from './db/index';
+export type {
+  RecoveryResult,
+  SearchResult,
+  SearchOptions,
+  TimelineFilter,
+  TimelineEntry,
+  TimelineResult,
+} from './db/index';
 
 // Import
 export {
