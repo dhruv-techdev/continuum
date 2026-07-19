@@ -12,6 +12,7 @@ import { registerStateCommand } from './commands/state';
 import { registerCaptureCommand } from './commands/capture';
 import { registerArtifactCommand } from './commands/artifact';
 import { registerDbCommand } from './commands/db';
+import { registerSearchCommand } from './commands/search';
 
 const program = new Command();
 
@@ -30,5 +31,6 @@ registerStateCommand(program);
 registerCaptureCommand(program);
 registerArtifactCommand(program);
 registerDbCommand(program);
+registerSearchCommand(program);
 
 program.parse();
