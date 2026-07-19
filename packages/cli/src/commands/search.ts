@@ -52,7 +52,7 @@ export function registerSearchCommand(program: Command): void {
     .option('--source <name>', 'Filter by event source')
     .option('--after <timestamp>', 'Only events after this ISO timestamp')
     .option('--before <timestamp>', 'Only events before this ISO timestamp')
-    .option('-n, --limit <count>', 'Max results', parseInt, 20)
+    .option('-n, --limit <count>', 'Max results', (v) => parseInt(v, 10), 20)
     .option('--verbose', 'Show full content in results', false)
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((query: string, opts) => {
