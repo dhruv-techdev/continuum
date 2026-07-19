@@ -140,6 +140,33 @@ export type {
   RegisterResult,
 } from './artifacts/index';
 
+// Database
+export {
+  SCHEMA_VERSION,
+  MetadataDB,
+  openDB,
+  closeDB,
+  closeAllDBs,
+  dbPath,
+  syncProject,
+  syncProjects,
+  syncSession,
+  syncSessions,
+  syncEvent,
+  syncEvents,
+  getWatermark,
+  setWatermark,
+  syncArtifact,
+  syncArtifacts,
+  countEvents,
+  countAllEvents,
+  searchEvents,
+  recoverSession,
+  recoverWorkspace,
+} from './db/index';
+
+export type { RecoveryResult } from './db/index';
+
 // Import
 export {
   detectFormat,
