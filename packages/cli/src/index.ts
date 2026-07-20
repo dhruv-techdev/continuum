@@ -21,6 +21,7 @@ import { registerContextCommand } from './commands/context';
 import { registerMcpCommand } from './commands/mcp';
 import { registerVerifyCommand } from './commands/verify';
 import { registerCoverageCommand } from './commands/coverage';
+import { registerScanCommand } from './commands/scan';
 
 const program = new Command();
 
@@ -48,5 +49,6 @@ registerContextCommand(program);
 registerMcpCommand(program);
 registerVerifyCommand(program);
 registerCoverageCommand(program);
+registerScanCommand(program);
 
 program.parse();
