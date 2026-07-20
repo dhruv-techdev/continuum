@@ -8,7 +8,7 @@ import {
   verifySessionLedger,
   IssueSeverities,
 } from '@continuum/core';
-import type { VerificationReport, VerificationIssue } from '@continuum/core';
+import type { LedgerVerificationReport as VerificationReport, VerificationIssue } from '@continuum/core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);
