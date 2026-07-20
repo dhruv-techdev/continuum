@@ -40,8 +40,8 @@ export type { TaskStatus, Task, CreateTaskInput } from './tracking/index';
 export { AttemptOutcomes, generateAttemptId, loadAttempts, recordAttempt, listAttempts, getFailedAttempts, getAttempt } from './tracking/index';
 export type { AttemptOutcome, Attempt, CreateAttemptInput } from './tracking/index';
 
-export { CAPSULE_SCHEMA_VERSION, buildManifest, validateManifest, isCompatibleCapsuleVersion, exportCapsule, verifyCapsuleIntegrity } from './capsule/index';
-export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, CapsuleStateSection, CapsuleTrackingSection, CapsuleTrackingFile, CapsuleArtifactSection, CapsuleEvaluationSection, CapsuleEvaluationSummary, CapsuleIntegritySection, CapsuleFileHash, CapsuleRedactionSummary, ManifestValidationError, BuildManifestInput, ExportOptions, ExportResult, VerifyCapsuleResult } from './capsule/index';
+export { CAPSULE_SCHEMA_VERSION, buildManifest, validateManifest, isCompatibleCapsuleVersion, exportCapsule, verifyCapsuleIntegrity, importCapsule, ImportPhases } from './capsule/index';
+export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, CapsuleStateSection, CapsuleTrackingSection, CapsuleTrackingFile, CapsuleArtifactSection, CapsuleEvaluationSection, CapsuleEvaluationSummary, CapsuleIntegritySection, CapsuleFileHash, CapsuleRedactionSummary, ManifestValidationError, BuildManifestInput, ExportOptions, ExportResult, VerifyCapsuleResult, ImportPhase, ImportIssue, CapsuleImportResult, CapsuleImportOptions } from './capsule/index';
 
 export { detectFormat, parseTranscript, parseJSON, parseMarkdown, normalizeToEvents, writeEventsToLedger, importTranscript, WarningTypes } from './import/index';
 export type { ParsedMessage, ParseResult, TranscriptFormat, ImportWarning, ImportResult, ImportStats, WarningType, NormalizeInput, NormalizeOutput } from './import/index';
