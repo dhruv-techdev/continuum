@@ -344,3 +344,7 @@ export type { SecretType, SecretPattern, SecretDetection, RedactionAction, Redac
 // Scoped capsule
 export { exportScopedCapsule, encryptFile, decryptFile } from './capsule/index';
 export type { ScopeFilter, ScopedExportOptions, ScopedExportResult } from './capsule/index';
+
+// Dashboard
+export { buildDashboard } from './dashboard/index';
+export type { DashboardSnapshot } from './dashboard/index';
