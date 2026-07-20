@@ -1,8 +1,4 @@
-export {
-  generateArtifactId,
-  StorageModes,
-  ArtifactStatuses,
-} from './types';
+export { generateArtifactId, StorageModes, ArtifactStatuses } from './types';
 
 export type {
   StorageMode,

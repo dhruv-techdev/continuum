@@ -71,15 +71,16 @@ export function loadDecisions(workspaceRoot: string, projectId: string): Decisio
 }
 
 function saveDecisions(workspaceRoot: string, projectId: string, decisions: Decision[]): void {
-  writeFileSync(filePath(workspaceRoot, projectId), JSON.stringify(decisions, null, 2) + '\n', 'utf-8');
+  writeFileSync(
+    filePath(workspaceRoot, projectId),
+    JSON.stringify(decisions, null, 2) + '\n',
+    'utf-8',
+  );
 }
 
 // ─── Operations ─────────────────────────────────────────────
 
-export function createDecision(
-  workspaceRoot: string,
-  input: CreateDecisionInput,
-): Decision {
+export function createDecision(workspaceRoot: string, input: CreateDecisionInput): Decision {
   const now = new Date().toISOString();
   const decisions = loadDecisions(workspaceRoot, input.projectId);
 

@@ -16,19 +16,21 @@ function formatStatements(statements: Statement[], label: string): string {
 
 function countActive(state: WorkingState): number {
   const all = [
-    ...state.objectives, ...state.requirements, ...state.constraints,
-    ...state.decisions, ...state.nextActions, ...state.completed,
-    ...state.failures, ...state.assumptions, ...state.openQuestions,
+    ...state.objectives,
+    ...state.requirements,
+    ...state.constraints,
+    ...state.decisions,
+    ...state.nextActions,
+    ...state.completed,
+    ...state.failures,
+    ...state.assumptions,
+    ...state.openQuestions,
   ];
   return all.filter((s) => s.status === StatementStatuses.ACTIVE).length;
 }
 
 function buildOrientation(project: Project, state: WorkingState): string {
-  const lines: string[] = [
-    '## L0 — Project Orientation',
-    '',
-    `**Project:** ${project.title}`,
-  ];
+  const lines: string[] = ['## L0 — Project Orientation', '', `**Project:** ${project.title}`];
 
   if (project.description) {
     lines.push(`**Description:** ${project.description}`);
@@ -86,10 +88,7 @@ function buildGoverningContext(state: WorkingState): string {
   return sections.join('\n');
 }
 
-export function generateBootstrap(
-  project: Project,
-  state: WorkingState,
-): BootstrapContext {
+export function generateBootstrap(project: Project, state: WorkingState): BootstrapContext {
   const orientation = buildOrientation(project, state);
   const activeState = buildActiveState(state);
   const governingContext = buildGoverningContext(state);

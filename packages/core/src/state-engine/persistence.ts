@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync, readdirSync } from 'fs';
+import { join } from 'path';
 import type { WorkingState } from './types';
 
 const STATE_FILENAME = 'working-state.json';
@@ -42,10 +42,7 @@ export function saveWorkingState(
   writeFileSync(path, JSON.stringify(state, null, 2) + '\n', 'utf-8');
 }
 
-export function loadWorkingState(
-  workspaceRoot: string,
-  projectId: string,
-): WorkingState | null {
+export function loadWorkingState(workspaceRoot: string, projectId: string): WorkingState | null {
   const path = statePath(workspaceRoot, projectId);
 
   if (!existsSync(path)) return null;
@@ -61,15 +58,11 @@ export function loadWorkingState(
 /**
  * List archived state versions for comparison.
  */
-export function listStateHistory(
-  workspaceRoot: string,
-  projectId: string,
-): string[] {
+export function listStateHistory(workspaceRoot: string, projectId: string): string[] {
   const hDir = historyDir(workspaceRoot, projectId);
 
   if (!existsSync(hDir)) return [];
 
-  const { readdirSync } = require('fs');
   const entries = readdirSync(hDir) as string[];
 
   return entries

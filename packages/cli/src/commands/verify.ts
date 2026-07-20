@@ -1,29 +1,53 @@
 import { Command } from 'commander';
+import { existsSync, readFileSync } from 'fs';
 import {
   DEFAULT_ROOT,
-  getState, getProject,
-  loadWorkingState, extractWorkingState,
-  saveWorkingState, openLedger, listSessions,
-  loadDecisions, listTasks, listAttempts,
-  generateChecks, scoreChecks, buildReport,
-  saveReport, loadLatestReport, listReports,
-  saveChecks, loadPendingChecks,
-  CheckStatuses, Criticalities,
-  identifyFailures, identifyCriticalFailures,
-  buildRepairPackage, runRepairCycle, RepairStatuses,
+  getState,
+  loadWorkingState,
+  extractWorkingState,
+  saveWorkingState,
+  openLedger,
+  listSessions,
+  loadDecisions,
+  listTasks,
+  listAttempts,
+  generateChecks,
+  scoreChecks,
+  buildReport,
+  saveReport,
+  loadLatestReport,
+  listReports,
+  saveChecks,
+  loadPendingChecks,
+  CheckStatuses,
+  Criticalities,
+  identifyFailures,
+  identifyCriticalFailures,
+  buildRepairPackage,
+  runRepairCycle,
+  RepairStatuses,
 } from '@continuum/core';
-import type { VerificationCheck, VerificationReport, RepairReport, ContinuumEvent } from '@continuum/core';
+import type {
+  VerificationReport,
+  RepairReport,
+  ContinuumEvent,
+} from '@continuum/core';
 
 function requireProject(root: string): string {
   const s = getState(root);
-  if (!s.activeProjectId) { console.error('\n✗ No active project.\n'); process.exit(1); }
+  if (!s.activeProjectId) {
+    console.error('\n✗ No active project.\n');
+    process.exit(1);
+  }
   return s.activeProjectId;
 }
 
 function loadAllEvents(root: string, projectId: string): ContinuumEvent[] {
   const sessions = listSessions(root, projectId);
   const all: ContinuumEvent[] = [];
-  for (const s of sessions) { all.push(...openLedger(root, projectId, s.id).readAll().events); }
+  for (const s of sessions) {
+    all.push(...openLedger(root, projectId, s.id).readAll().events);
+  }
   all.sort((a, b) => a.sequence - b.sequence);
   return all;
 }
@@ -40,13 +64,17 @@ function formatVerificationReport(report: VerificationReport): string {
   lines.push(`  Grounding:      ${(report.groundingRate * 100).toFixed(1)}%`);
   lines.push(`  Contradictions: ${report.contradictionCount}`);
   lines.push(`  Critical fails: ${report.criticalFailures}`);
-  lines.push(`\n  Checks: ${report.passedChecks}/${report.totalChecks} passed, ${report.failedChecks} failed\n`);
+  lines.push(
+    `\n  Checks: ${report.passedChecks}/${report.totalChecks} passed, ${report.failedChecks} failed\n`,
+  );
 
   if (report.dimensionScores.length > 0) {
     lines.push('  Dimensions:\n');
     for (const d of report.dimensionScores) {
       const met = d.met ? '✓' : '✗';
-      lines.push(`    ${met} ${d.label.padEnd(24)} ${(d.score * 100).toFixed(0)}% (target: ${(d.target * 100).toFixed(0)}%)  ${d.passedChecks}/${d.totalChecks}`);
+      lines.push(
+        `    ${met} ${d.label.padEnd(24)} ${(d.score * 100).toFixed(0)}% (target: ${(d.target * 100).toFixed(0)}%)  ${d.passedChecks}/${d.totalChecks}`,
+      );
     }
     lines.push('');
   }
@@ -122,7 +150,8 @@ export function registerVerifyCommand(program: Command): void {
 
   // ── generate ────────────────────────────────────────────
 
-  verify.command('generate')
+  verify
+    .command('generate')
     .description('Generate verification checks from project state')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
@@ -155,7 +184,8 @@ export function registerVerifyCommand(program: Command): void {
 
   // ── show ────────────────────────────────────────────────
 
-  verify.command('show')
+  verify
+    .command('show')
     .description('Show pending verification checks')
     .option('--json', 'Output as JSON', false)
     .option('--root <path>', '', DEFAULT_ROOT)
@@ -163,24 +193,38 @@ export function registerVerifyCommand(program: Command): void {
       const projectId = requireProject(opts.root);
       const checks = loadPendingChecks(opts.root, projectId);
 
-      if (!checks) { console.log('\n  No pending checks. Run "continuum verify generate" first.\n'); return; }
+      if (!checks) {
+        console.log('\n  No pending checks. Run "continuum verify generate" first.\n');
+        return;
+      }
 
-      if (opts.json) { console.log(JSON.stringify(checks, null, 2)); return; }
+      if (opts.json) {
+        console.log(JSON.stringify(checks, null, 2));
+        return;
+      }
 
       console.log(`\n─── Verification Checks (${checks.length})\n`);
       for (let i = 0; i < checks.length; i++) {
         const c = checks[i];
-        const crit = c.criticality === Criticalities.CRITICAL ? ' [CRITICAL]' : c.criticality === 'high' ? ' [HIGH]' : '';
+        const crit =
+          c.criticality === Criticalities.CRITICAL
+            ? ' [CRITICAL]'
+            : c.criticality === 'high'
+              ? ' [HIGH]'
+              : '';
         console.log(`  ${i + 1}. [${c.dimension}]${crit}`);
         console.log(`     Q: ${c.question}`);
-        console.log(`     A: ${c.expectedAnswer.slice(0, 120)}${c.expectedAnswer.length > 120 ? '…' : ''}`);
+        console.log(
+          `     A: ${c.expectedAnswer.slice(0, 120)}${c.expectedAnswer.length > 120 ? '…' : ''}`,
+        );
         console.log('');
       }
     });
 
   // ── score ───────────────────────────────────────────────
 
-  verify.command('score')
+  verify
+    .command('score')
     .description('Score verification checks')
     .option('--answers <file>', 'JSON file: { "checkId": "answer", ... }')
     .option('--auto', 'Self-test with expected answers', false)
@@ -188,18 +232,24 @@ export function registerVerifyCommand(program: Command): void {
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const checks = loadPendingChecks(opts.root, projectId);
-      if (!checks) { console.log('\n  No pending checks.\n'); return; }
+      if (!checks) {
+        console.log('\n  No pending checks.\n');
+        return;
+      }
 
       const answers = new Map<string, string>();
       if (opts.auto) {
         for (const c of checks) answers.set(c.id, c.expectedAnswer);
       } else if (opts.answers) {
-        const { existsSync, readFileSync } = require('fs');
-        if (!existsSync(opts.answers)) { console.error(`\n✗ Not found: ${opts.answers}\n`); process.exit(1); }
+        if (!existsSync(opts.answers)) {
+          console.error(`\n✗ Not found: ${opts.answers}\n`);
+          process.exit(1);
+        }
         const parsed = JSON.parse(readFileSync(opts.answers, 'utf-8'));
         for (const [k, v] of Object.entries(parsed)) answers.set(k, v as string);
       } else {
-        console.error('\n✗ Provide --answers <file> or --auto.\n'); process.exit(1);
+        console.error('\n✗ Provide --answers <file> or --auto.\n');
+        process.exit(1);
       }
 
       scoreChecks(checks, answers);
@@ -212,7 +262,8 @@ export function registerVerifyCommand(program: Command): void {
 
   // ── repair (ST1 + ST2 + ST3) ────────────────────────────
 
-  verify.command('repair')
+  verify
+    .command('repair')
     .description('Generate repair evidence for failed checks and re-score')
     .option('--answers <file>', 'JSON file with repaired answers')
     .option('--auto', 'Auto-repair using expected answers (self-test)', false)
@@ -224,7 +275,9 @@ export function registerVerifyCommand(program: Command): void {
       const report = loadLatestReport(opts.root, projectId);
 
       if (!report) {
-        console.error('\n✗ No verification report found. Run "continuum verify generate" and "continuum verify score" first.\n');
+        console.error(
+          '\n✗ No verification report found. Run "continuum verify generate" and "continuum verify score" first.\n',
+        );
         process.exit(1);
       }
 
@@ -258,8 +311,10 @@ export function registerVerifyCommand(program: Command): void {
           repairedAnswers.set(check.id, check.expectedAnswer);
         }
       } else if (opts.answers) {
-        const { existsSync, readFileSync } = require('fs');
-        if (!existsSync(opts.answers)) { console.error(`\n✗ Not found: ${opts.answers}\n`); process.exit(1); }
+        if (!existsSync(opts.answers)) {
+          console.error(`\n✗ Not found: ${opts.answers}\n`);
+          process.exit(1);
+        }
         const parsed = JSON.parse(readFileSync(opts.answers, 'utf-8'));
         for (const [k, v] of Object.entries(parsed)) repairedAnswers.set(k, v as string);
       } else {
@@ -301,27 +356,38 @@ export function registerVerifyCommand(program: Command): void {
 
   // ── report ──────────────────────────────────────────────
 
-  verify.command('report')
+  verify
+    .command('report')
     .description('Show the latest verification report')
     .option('--json', 'Output as JSON', false)
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const report = loadLatestReport(opts.root, projectId);
-      if (!report) { console.log('\n  No reports. Run "continuum verify generate" then "verify score".\n'); return; }
-      if (opts.json) { console.log(JSON.stringify(report, null, 2)); return; }
+      if (!report) {
+        console.log('\n  No reports. Run "continuum verify generate" then "verify score".\n');
+        return;
+      }
+      if (opts.json) {
+        console.log(JSON.stringify(report, null, 2));
+        return;
+      }
       console.log(formatVerificationReport(report));
     });
 
   // ── history ─────────────────────────────────────────────
 
-  verify.command('history')
+  verify
+    .command('history')
     .description('List verification reports')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const files = listReports(opts.root, projectId);
-      if (files.length === 0) { console.log('\n  No reports.\n'); return; }
+      if (files.length === 0) {
+        console.log('\n  No reports.\n');
+        return;
+      }
       console.log(`\n  Reports (${files.length}):\n`);
       for (const f of files) console.log(`    ${f}`);
       console.log('');

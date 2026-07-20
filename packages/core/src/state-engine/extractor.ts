@@ -9,17 +9,8 @@
 import { randomUUID } from 'crypto';
 import type { ContinuumEvent, MessageEvent } from '../events/types';
 import { EventTypes } from '../events/types';
-import {
-  StatementCategories,
-  ConfidenceLevels,
-  StatementStatuses,
-} from './types';
-import type {
-  Statement,
-  StatementCategory,
-  ConfidenceLevel,
-  WorkingState,
-} from './types';
+import { StatementCategories, ConfidenceLevels, StatementStatuses } from './types';
+import type { Statement, StatementCategory, ConfidenceLevel, WorkingState } from './types';
 
 const STATE_VERSION = 2;
 
@@ -32,46 +23,167 @@ interface ExtractionPattern {
 
 const PATTERNS: ExtractionPattern[] = [
   // ── Objectives
-  { category: StatementCategories.OBJECTIVE, pattern: /\b(?:goal|objective|aim|purpose)\s+(?:is|:)\s*/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.OBJECTIVE, pattern: /\b(?:i want|we want|i need|we need)\s+(?:to|a|an|the)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'user' },
-  { category: StatementCategories.OBJECTIVE, pattern: /\b(?:trying to|planning to|working on)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'user' },
-  { category: StatementCategories.OBJECTIVE, pattern: /\b(?:build|create|implement|design|develop)\s+(?:a|an|the)\b/i, confidence: ConfidenceLevels.LOW, roleFilter: 'user' },
+  {
+    category: StatementCategories.OBJECTIVE,
+    pattern: /\b(?:goal|objective|aim|purpose)\s+(?:is|:)\s*/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.OBJECTIVE,
+    pattern: /\b(?:i want|we want|i need|we need)\s+(?:to|a|an|the)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'user',
+  },
+  {
+    category: StatementCategories.OBJECTIVE,
+    pattern: /\b(?:trying to|planning to|working on)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'user',
+  },
+  {
+    category: StatementCategories.OBJECTIVE,
+    pattern: /\b(?:build|create|implement|design|develop)\s+(?:a|an|the)\b/i,
+    confidence: ConfidenceLevels.LOW,
+    roleFilter: 'user',
+  },
 
   // ── Requirements (ST1 — distinct from constraints)
-  { category: StatementCategories.REQUIREMENT, pattern: /\b(?:requirement|required|needs to|need to support)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.REQUIREMENT, pattern: /\b(?:should support|should handle|should be able)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
-  { category: StatementCategories.REQUIREMENT, pattern: /\b(?:acceptance criteria|success criteria|definition of done)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
+  {
+    category: StatementCategories.REQUIREMENT,
+    pattern: /\b(?:requirement|required|needs to|need to support)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.REQUIREMENT,
+    pattern: /\b(?:should support|should handle|should be able)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.REQUIREMENT,
+    pattern: /\b(?:acceptance criteria|success criteria|definition of done)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
 
   // ── Constraints
-  { category: StatementCategories.CONSTRAINT, pattern: /\b(?:must|shall|has to|have to)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.CONSTRAINT, pattern: /\b(?:cannot|can't|must not|should not|shouldn't|do not|don't)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.CONSTRAINT, pattern: /\b(?:constraint|limitation|restriction|prohibition)\s*:/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.CONSTRAINT, pattern: /\b(?:avoid|never|always)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
+  {
+    category: StatementCategories.CONSTRAINT,
+    pattern: /\b(?:must|shall|has to|have to)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.CONSTRAINT,
+    pattern: /\b(?:cannot|can't|must not|should not|shouldn't|do not|don't)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.CONSTRAINT,
+    pattern: /\b(?:constraint|limitation|restriction|prohibition)\s*:/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.CONSTRAINT,
+    pattern: /\b(?:avoid|never|always)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
 
   // ── Decisions
-  { category: StatementCategories.DECISION, pattern: /\b(?:decided|decision)\s*(?:to|:)/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.DECISION, pattern: /\b(?:going with|chose|chosen|picking|selected)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.DECISION, pattern: /\b(?:let's use|we'll use|i'll use|let's go with)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
-  { category: StatementCategories.DECISION, pattern: /\b(?:instead of|rather than|over|preferred)\b/i, confidence: ConfidenceLevels.LOW, roleFilter: 'any' },
+  {
+    category: StatementCategories.DECISION,
+    pattern: /\b(?:decided|decision)\s*(?:to|:)/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.DECISION,
+    pattern: /\b(?:going with|chose|chosen|picking|selected)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.DECISION,
+    pattern: /\b(?:let's use|we'll use|i'll use|let's go with)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.DECISION,
+    pattern: /\b(?:instead of|rather than|over|preferred)\b/i,
+    confidence: ConfidenceLevels.LOW,
+    roleFilter: 'any',
+  },
 
   // ── Next actions
-  { category: StatementCategories.NEXT_ACTION, pattern: /\b(?:next step|next action|next,?|todo|to-do)\s*(?:is|:|—)/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.NEXT_ACTION, pattern: /\b(?:then we|after that|following that|subsequently)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
-  { category: StatementCategories.NEXT_ACTION, pattern: /\b(?:action item|task)\s*:/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
+  {
+    category: StatementCategories.NEXT_ACTION,
+    pattern: /\b(?:next step|next action|next,?|todo|to-do)\s*(?:is|:|—)/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.NEXT_ACTION,
+    pattern: /\b(?:then we|after that|following that|subsequently)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.NEXT_ACTION,
+    pattern: /\b(?:action item|task)\s*:/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
 
   // ── Completed
-  { category: StatementCategories.COMPLETED, pattern: /\b(?:done|completed|finished|implemented|added|created|built|set up|configured)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'assistant' },
+  {
+    category: StatementCategories.COMPLETED,
+    pattern: /\b(?:done|completed|finished|implemented|added|created|built|set up|configured)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'assistant',
+  },
 
   // ── Failures
-  { category: StatementCategories.FAILURE, pattern: /\b(?:failed|didn't work|doesn't work|broken|error|bug|issue|problem)\b/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
-  { category: StatementCategories.FAILURE, pattern: /\b(?:tried|attempted)\b.*\b(?:but|however|unfortunately)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
+  {
+    category: StatementCategories.FAILURE,
+    pattern: /\b(?:failed|didn't work|doesn't work|broken|error|bug|issue|problem)\b/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.FAILURE,
+    pattern: /\b(?:tried|attempted)\b.*\b(?:but|however|unfortunately)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
 
   // ── Assumptions
-  { category: StatementCategories.ASSUMPTION, pattern: /\b(?:assuming|assumption|i assume|we assume|presumably)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
+  {
+    category: StatementCategories.ASSUMPTION,
+    pattern: /\b(?:assuming|assumption|i assume|we assume|presumably)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
 
   // ── Open questions
-  { category: StatementCategories.OPEN_QUESTION, pattern: /\b(?:unclear|unsure|not sure|need to figure out|open question|tbd|to be determined)\b/i, confidence: ConfidenceLevels.HIGH, roleFilter: 'any' },
-  { category: StatementCategories.OPEN_QUESTION, pattern: /\b(?:should we|do we need|what about|how should)\b.*\?/i, confidence: ConfidenceLevels.MEDIUM, roleFilter: 'any' },
+  {
+    category: StatementCategories.OPEN_QUESTION,
+    pattern:
+      /\b(?:unclear|unsure|not sure|need to figure out|open question|tbd|to be determined)\b/i,
+    confidence: ConfidenceLevels.HIGH,
+    roleFilter: 'any',
+  },
+  {
+    category: StatementCategories.OPEN_QUESTION,
+    pattern: /\b(?:should we|do we need|what about|how should)\b.*\?/i,
+    confidence: ConfidenceLevels.MEDIUM,
+    roleFilter: 'any',
+  },
 ];
 
 function splitSentences(text: string): string[] {
@@ -83,7 +195,8 @@ function splitSentences(text: string): string[] {
     if (trimmed.length < 10) continue;
     if (trimmed.startsWith('```')) continue;
     if (trimmed.startsWith('import ') || trimmed.startsWith('export ')) continue;
-    if (trimmed.startsWith('const ') || trimmed.startsWith('let ') || trimmed.startsWith('var ')) continue;
+    if (trimmed.startsWith('const ') || trimmed.startsWith('let ') || trimmed.startsWith('var '))
+      continue;
     sentences.push(trimmed);
   }
 
@@ -144,10 +257,7 @@ function extractFromMessage(event: MessageEvent): Statement[] {
   return statements;
 }
 
-export function extractWorkingState(
-  projectId: string,
-  events: ContinuumEvent[],
-): WorkingState {
+export function extractWorkingState(projectId: string, events: ContinuumEvent[]): WorkingState {
   const sessionIds = [...new Set(events.map((e) => e.sessionId))];
   const allStatements: Statement[] = [];
 
@@ -159,8 +269,7 @@ export function extractWorkingState(
 
   allStatements.sort((a, b) => a.sourceSequence - b.sourceSequence);
 
-  const byCategory = (cat: StatementCategory) =>
-    allStatements.filter((s) => s.category === cat);
+  const byCategory = (cat: StatementCategory) => allStatements.filter((s) => s.category === cat);
 
   return {
     projectId,

@@ -22,14 +22,7 @@ export { recoverSession, recoverWorkspace } from './recovery';
 
 export type { RecoveryResult } from './recovery';
 
-export {
-  ensureFTS,
-  extractContent,
-  indexEvent,
-  indexEvents,
-  search,
-  countIndexed,
-} from './fts';
+export { ensureFTS, extractContent, indexEvent, indexEvents, search, countIndexed } from './fts';
 
 export type { SearchResult, SearchOptions } from './fts';
 
@@ -42,8 +35,4 @@ export {
   getTimeRange,
 } from './timeline';
 
-export type {
-  TimelineFilter,
-  TimelineEntry,
-  TimelineResult,
-} from './timeline';
+export type { TimelineFilter, TimelineEntry, TimelineResult } from './timeline';

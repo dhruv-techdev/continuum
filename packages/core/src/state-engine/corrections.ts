@@ -16,11 +16,20 @@ export interface CorrectionResult {
   error: string | null;
 }
 
-function findStatement(state: WorkingState, id: string): { statement: Statement; list: Statement[] } | null {
+function findStatement(
+  state: WorkingState,
+  id: string,
+): { statement: Statement; list: Statement[] } | null {
   const categories: Statement[][] = [
-    state.objectives, state.requirements, state.constraints,
-    state.decisions, state.nextActions, state.completed,
-    state.failures, state.assumptions, state.openQuestions,
+    state.objectives,
+    state.requirements,
+    state.constraints,
+    state.decisions,
+    state.nextActions,
+    state.completed,
+    state.failures,
+    state.assumptions,
+    state.openQuestions,
   ];
 
   for (const list of categories) {
@@ -50,10 +59,7 @@ function getCategoryList(state: WorkingState, category: StatementCategory): Stat
  * Apply a correction to a statement in the working state.
  * Mutates the state in place and returns the result.
  */
-export function correctStatement(
-  state: WorkingState,
-  input: CorrectionInput,
-): CorrectionResult {
+export function correctStatement(state: WorkingState, input: CorrectionInput): CorrectionResult {
   const match = findStatement(state, input.statementId);
 
   if (!match) {
@@ -123,9 +129,15 @@ export function rejectStatement(
  */
 export function getActiveStatements(state: WorkingState): Statement[] {
   const all = [
-    ...state.objectives, ...state.requirements, ...state.constraints,
-    ...state.decisions, ...state.nextActions, ...state.completed,
-    ...state.failures, ...state.assumptions, ...state.openQuestions,
+    ...state.objectives,
+    ...state.requirements,
+    ...state.constraints,
+    ...state.decisions,
+    ...state.nextActions,
+    ...state.completed,
+    ...state.failures,
+    ...state.assumptions,
+    ...state.openQuestions,
   ];
 
   return all.filter((s) => s.status === StatementStatuses.ACTIVE);
@@ -136,9 +148,15 @@ export function getActiveStatements(state: WorkingState): Statement[] {
  */
 export function getCorrectionChain(state: WorkingState, statementId: string): Statement[] {
   const all = [
-    ...state.objectives, ...state.requirements, ...state.constraints,
-    ...state.decisions, ...state.nextActions, ...state.completed,
-    ...state.failures, ...state.assumptions, ...state.openQuestions,
+    ...state.objectives,
+    ...state.requirements,
+    ...state.constraints,
+    ...state.decisions,
+    ...state.nextActions,
+    ...state.completed,
+    ...state.failures,
+    ...state.assumptions,
+    ...state.openQuestions,
   ];
 
   const chain: Statement[] = [];

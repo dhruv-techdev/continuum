@@ -2,7 +2,6 @@ import { Command } from 'commander';
 import {
   DEFAULT_ROOT,
   getState,
-  getProject,
   registerArtifact,
   listArtifacts,
   findArtifactById,
@@ -10,7 +9,7 @@ import {
   StorageModes,
   ArtifactStatuses,
 } from '@continuum/core';
-import type { ArtifactEntry, StorageMode } from '@continuum/core';
+import type { StorageMode } from '@continuum/core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);
@@ -30,9 +29,7 @@ function formatSize(bytes: number): string {
 }
 
 export function registerArtifactCommand(program: Command): void {
-  const artifact = program
-    .command('artifact')
-    .description('Manage project artifacts');
+  const artifact = program.command('artifact').description('Manage project artifacts');
 
   // ── register ────────────────────────────────────────────
 
@@ -47,9 +44,7 @@ export function registerArtifactCommand(program: Command): void {
     .action((filePath: string, opts) => {
       const projectId = requireActiveProject(opts.root);
 
-      const storageMode: StorageMode = opts.store
-        ? StorageModes.CONTENT
-        : StorageModes.REFERENCE;
+      const storageMode: StorageMode = opts.store ? StorageModes.CONTENT : StorageModes.REFERENCE;
 
       const result = registerArtifact(opts.root, {
         projectId,
@@ -97,16 +92,21 @@ export function registerArtifactCommand(program: Command): void {
       const artifacts = listArtifacts(opts.root, projectId, opts.all);
 
       if (artifacts.length === 0) {
-        console.log('\n  No artifacts registered. Run "continuum artifact register <path>" to add one.\n');
+        console.log(
+          '\n  No artifacts registered. Run "continuum artifact register <path>" to add one.\n',
+        );
         return;
       }
 
       console.log(`\n  Artifacts (${artifacts.length}):\n`);
 
       for (const a of artifacts) {
-        const statusIcon = a.status === ArtifactStatuses.ACTIVE ? '●'
-          : a.status === ArtifactStatuses.SUPERSEDED ? '○'
-          : '✗';
+        const statusIcon =
+          a.status === ArtifactStatuses.ACTIVE
+            ? '●'
+            : a.status === ArtifactStatuses.SUPERSEDED
+              ? '○'
+              : '✗';
         const stored = a.storageMode === StorageModes.CONTENT ? ' [stored]' : ' [ref]';
 
         console.log(`  ${statusIcon} ${a.id}  ${a.fileName}${stored}`);

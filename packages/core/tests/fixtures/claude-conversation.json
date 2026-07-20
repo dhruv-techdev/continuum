@@ -1,0 +1,99 @@
+[
+  {
+    "role": "user",
+    "content": "What is the capital of France?"
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "The capital of France is Paris."
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "end_turn"
+  },
+  {
+    "role": "user",
+    "content": "Search for the current population."
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Let me search for that."
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_01ABC123",
+        "name": "web_search",
+        "input": { "query": "Paris population 2025" }
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "tool_use"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01ABC123",
+        "content": "Paris has a population of approximately 2.1 million in the city proper and 12.3 million in the metro area."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Based on the search results, Paris has approximately 2.1 million people in the city proper and around 12.3 million in the metropolitan area."
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "end_turn"
+  },
+  {
+    "role": "user",
+    "content": "Can you also check the weather there?"
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_02DEF456",
+        "name": "weather_fetch",
+        "input": { "city": "Paris", "country": "FR" }
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "tool_use"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_02DEF456",
+        "content": [
+          { "type": "text", "text": "Current weather in Paris: 22°C, partly cloudy." }
+        ]
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "The current weather in Paris is 22°C and partly cloudy. A lovely day!"
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "end_turn"
+  }
+]

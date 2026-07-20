@@ -7,7 +7,6 @@
  */
 
 import type { MetadataDB } from './database';
-import type { ContinuumEvent } from '../events/types';
 
 // ─── Timeline filter options (ST1) ──────────────────────────
 
@@ -167,9 +166,9 @@ export function getTimeline(db: MetadataDB, filter: TimelineFilter): TimelineRes
   const offset = filter.offset ?? 0;
 
   // Count total matching
-  const countRow = db.db.prepare(
-    `SELECT COUNT(*) as total FROM events WHERE ${where}`
-  ).get(...params) as { total: number };
+  const countRow = db.db
+    .prepare(`SELECT COUNT(*) as total FROM events WHERE ${where}`)
+    .get(...params) as { total: number };
 
   const total = countRow.total;
 
@@ -195,11 +194,15 @@ export function getTimeline(db: MetadataDB, filter: TimelineFilter): TimelineRes
 // ─── ST3: Direct retrieval by event ID ──────────────────────
 
 export function getEventById(db: MetadataDB, eventId: string): TimelineEntry | null {
-  const row = db.db.prepare(`
+  const row = db.db
+    .prepare(
+      `
     SELECT id, project_id, session_id, type, sequence, timestamp, source, hash, schema_version, payload_json
     FROM events
     WHERE id = ?
-  `).get(eventId) as Record<string, unknown> | undefined;
+  `,
+    )
+    .get(eventId) as Record<string, unknown> | undefined;
 
   if (!row) return null;
 
@@ -227,26 +230,33 @@ export function getEventsByIds(db: MetadataDB, eventIds: string[]): TimelineEntr
 // ─── Get distinct values for filtering UI ───────────────────
 
 export function getDistinctTypes(db: MetadataDB, projectId: string): string[] {
-  const rows = db.db.prepare(
-    'SELECT DISTINCT type FROM events WHERE project_id = ? ORDER BY type'
-  ).all(projectId) as Array<{ type: string }>;
+  const rows = db.db
+    .prepare('SELECT DISTINCT type FROM events WHERE project_id = ? ORDER BY type')
+    .all(projectId) as Array<{ type: string }>;
 
   return rows.map((r) => r.type);
 }
 
 export function getDistinctSources(db: MetadataDB, projectId: string): string[] {
-  const rows = db.db.prepare(
-    'SELECT DISTINCT source FROM events WHERE project_id = ? ORDER BY source'
-  ).all(projectId) as Array<{ source: string }>;
+  const rows = db.db
+    .prepare('SELECT DISTINCT source FROM events WHERE project_id = ? ORDER BY source')
+    .all(projectId) as Array<{ source: string }>;
 
   return rows.map((r) => r.source);
 }
 
-export function getTimeRange(db: MetadataDB, projectId: string): { earliest: string | null; latest: string | null } {
-  const row = db.db.prepare(`
+export function getTimeRange(
+  db: MetadataDB,
+  projectId: string,
+): { earliest: string | null; latest: string | null } {
+  const row = db.db
+    .prepare(
+      `
     SELECT MIN(timestamp) as earliest, MAX(timestamp) as latest
     FROM events WHERE project_id = ?
-  `).get(projectId) as { earliest: string | null; latest: string | null };
+  `,
+    )
+    .get(projectId) as { earliest: string | null; latest: string | null };
 
   return row;
 }

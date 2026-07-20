@@ -34,9 +34,8 @@ function formatResult(result: SearchResult, index: number, verbose: boolean): st
   lines.push(`     Match:   ${result.excerpt}`);
 
   if (verbose) {
-    const preview = result.content.length > 200
-      ? result.content.slice(0, 200) + '…'
-      : result.content;
+    const preview =
+      result.content.length > 200 ? result.content.slice(0, 200) + '…' : result.content;
     lines.push(`     Content: ${preview}`);
   }
 

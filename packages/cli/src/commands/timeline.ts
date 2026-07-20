@@ -7,8 +7,6 @@ import {
   recoverWorkspace,
   countAllEvents,
   getTimeline,
-  getDistinctTypes,
-  getTimeRange,
 } from '@continuum/core';
 import type { TimelineEntry } from '@continuum/core';
 
@@ -103,16 +101,19 @@ export function registerTimelineCommand(program: Command): void {
         console.log('\n  No events match the given filters.\n');
 
         if (types || opts.session || opts.after || opts.before) {
-          console.log('  Try removing some filters or run "continuum db sync" to update the index.\n');
+          console.log(
+            '  Try removing some filters or run "continuum db sync" to update the index.\n',
+          );
         }
         return;
       }
 
-      const rangeLabel = opts.offset > 0
-        ? ` (${opts.offset + 1}–${opts.offset + result.entries.length} of ${result.total})`
-        : result.total > result.entries.length
-          ? ` (showing ${result.entries.length} of ${result.total})`
-          : '';
+      const rangeLabel =
+        opts.offset > 0
+          ? ` (${opts.offset + 1}–${opts.offset + result.entries.length} of ${result.total})`
+          : result.total > result.entries.length
+            ? ` (showing ${result.entries.length} of ${result.total})`
+            : '';
 
       console.log(`\n─── Timeline: ${result.total} event(s)${rangeLabel}\n`);
 
@@ -123,7 +124,9 @@ export function registerTimelineCommand(program: Command): void {
 
       if (result.hasMore) {
         const nextOffset = (opts.offset ?? 0) + result.entries.length;
-        console.log(`  → More events available. Use --offset ${nextOffset} to see the next page.\n`);
+        console.log(
+          `  → More events available. Use --offset ${nextOffset} to see the next page.\n`,
+        );
       }
     });
 }

@@ -10,26 +10,15 @@ import { listSessions } from '../projects/session-store';
 import { openLedger } from '../ledger/event-ledger';
 import {
   extractWorkingState,
-  generateBootstrap,
   loadWorkingState,
-  getActiveStatements,
 } from '../state-engine/index';
 import { loadDecisions } from '../tracking/decisions';
 import { loadTasks } from '../tracking/tasks';
-import { loadAttempts, getFailedAttempts } from '../tracking/attempts';
+import { getFailedAttempts } from '../tracking/attempts';
 import { estimateTokens, trimToTokenBudget } from './tokens';
-import { ContextLayers, ALL_LAYERS } from './types';
-import type {
-  ContextLayer,
-  LayerContent,
-  ContextPackage,
-  ContextBuildOptions,
-} from './types';
-import type { ContinuumEvent, MessageEvent } from '../events/types';
-import type { Statement } from '../state-engine/types';
-import type { Decision } from '../tracking/decisions';
-import type { Task } from '../tracking/tasks';
-import type { Attempt } from '../tracking/attempts';
+import { ContextLayers } from './types';
+import type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions } from './types';
+import type { ContinuumEvent } from '../events/types';
 
 // ─── Load all events ────────────────────────────────────────
 
@@ -48,19 +37,11 @@ function loadAllEvents(workspaceRoot: string, projectId: string): ContinuumEvent
 
 // ─── L0: Orientation (ST1) ──────────────────────────────────
 
-function buildL0(
-  workspaceRoot: string,
-  projectId: string,
-  events: ContinuumEvent[],
-): LayerContent {
+function buildL0(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
   const project = getProject(workspaceRoot, projectId)!;
   const sessions = listSessions(workspaceRoot, projectId);
 
-  const lines: string[] = [
-    '## L0 — Project Orientation',
-    '',
-    `**Project:** ${project.title}`,
-  ];
+  const lines: string[] = ['## L0 — Project Orientation', '', `**Project:** ${project.title}`];
 
   if (project.description) lines.push(`**Description:** ${project.description}`);
 
@@ -68,7 +49,9 @@ function buildL0(
   lines.push(`**Total events:** ${events.length}`);
 
   if (events.length > 0) {
-    lines.push(`**Time span:** ${events[0].timestamp.slice(0, 19)} → ${events[events.length - 1].timestamp.slice(0, 19)}`);
+    lines.push(
+      `**Time span:** ${events[0].timestamp.slice(0, 19)} → ${events[events.length - 1].timestamp.slice(0, 19)}`,
+    );
   }
 
   // Try to find the primary objective
@@ -92,11 +75,7 @@ function buildL0(
 
 // ─── L1: Active state (ST2) ────────────────────────────────
 
-function buildL1(
-  workspaceRoot: string,
-  projectId: string,
-  events: ContinuumEvent[],
-): LayerContent {
+function buildL1(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
   let state = loadWorkingState(workspaceRoot, projectId);
   if (!state) {
     state = extractWorkingState(projectId, events);
@@ -127,7 +106,8 @@ function buildL1(
   // Completed work
   if (completedTasks.length > 0) {
     sections.push(`### Completed (${completedTasks.length})`);
-    for (const t of completedTasks.slice(-5)) sections.push(`- ✓ ${t.description}${t.completionNote ? ` — ${t.completionNote}` : ''}`);
+    for (const t of completedTasks.slice(-5))
+      sections.push(`- ✓ ${t.description}${t.completionNote ? ` — ${t.completionNote}` : ''}`);
     if (completedTasks.length > 5) sections.push(`- … and ${completedTasks.length - 5} more`);
     sections.push('');
   }
@@ -135,7 +115,8 @@ function buildL1(
   // Blockers
   if (blockedTasks.length > 0) {
     sections.push('### Blocked');
-    for (const t of blockedTasks) sections.push(`- ✗ ${t.description}: ${t.blockedReason ?? 'unknown reason'}`);
+    for (const t of blockedTasks)
+      sections.push(`- ✗ ${t.description}: ${t.blockedReason ?? 'unknown reason'}`);
     sections.push('');
   }
 
@@ -172,11 +153,7 @@ function buildL1(
 
 // ─── L2: Governing context (ST2) ───────────────────────────
 
-function buildL2(
-  workspaceRoot: string,
-  projectId: string,
-  events: ContinuumEvent[],
-): LayerContent {
+function buildL2(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
   let state = loadWorkingState(workspaceRoot, projectId);
   if (!state) {
     state = extractWorkingState(projectId, events);
@@ -190,7 +167,9 @@ function buildL2(
   const sections: string[] = ['## L2 — Governing Context', ''];
 
   // Constraints
-  const constraints = [...(state.requirements ?? []), ...state.constraints].filter((s) => s.status === 'active');
+  const constraints = [...(state.requirements ?? []), ...state.constraints].filter(
+    (s) => s.status === 'active',
+  );
   if (constraints.length > 0) {
     sections.push('### Constraints & Requirements');
     for (const c of constraints) sections.push(`- ${c.text}`);
@@ -202,7 +181,8 @@ function buildL2(
     sections.push('### Active Decisions');
     for (const d of activeDecisions) {
       sections.push(`- **${d.choice}**${d.rationale ? ` — ${d.rationale}` : ''}`);
-      if (d.alternatives.length > 0) sections.push(`  Alternatives considered: ${d.alternatives.join(', ')}`);
+      if (d.alternatives.length > 0)
+        sections.push(`  Alternatives considered: ${d.alternatives.join(', ')}`);
     }
     sections.push('');
   }
@@ -255,14 +235,22 @@ function extractPreview(event: ContinuumEvent): string {
   const payload = event.payload as unknown as Record<string, unknown>;
 
   switch (event.type) {
-    case 'message': return (payload.content as string) ?? '';
-    case 'tool_call': return `[tool_call] ${payload.toolName}: ${JSON.stringify(payload.input ?? {}).slice(0, 100)}`;
-    case 'tool_result': return `[tool_result] ${payload.toolName}: ${((payload.output as string) ?? '').slice(0, 200)}`;
-    case 'command': return `$ ${payload.command}`;
-    case 'command_output': return `[exit ${payload.exitCode ?? '?'}] ${((payload.stdout as string) ?? '').slice(0, 200)}`;
-    case 'artifact': return `[artifact] ${payload.action}: ${payload.uri}`;
-    case 'system': return `[system] ${payload.action}${payload.message ? ': ' + payload.message : ''}`;
-    default: return JSON.stringify(payload).slice(0, 100);
+    case 'message':
+      return (payload.content as string) ?? '';
+    case 'tool_call':
+      return `[tool_call] ${payload.toolName}: ${JSON.stringify(payload.input ?? {}).slice(0, 100)}`;
+    case 'tool_result':
+      return `[tool_result] ${payload.toolName}: ${((payload.output as string) ?? '').slice(0, 200)}`;
+    case 'command':
+      return `$ ${payload.command}`;
+    case 'command_output':
+      return `[exit ${payload.exitCode ?? '?'}] ${((payload.stdout as string) ?? '').slice(0, 200)}`;
+    case 'artifact':
+      return `[artifact] ${payload.action}: ${payload.uri}`;
+    case 'system':
+      return `[system] ${payload.action}${payload.message ? ': ' + payload.message : ''}`;
+    default:
+      return JSON.stringify(payload).slice(0, 100);
   }
 }
 
@@ -309,7 +297,9 @@ function buildL3(
   }
 
   if (relevant.length > maxEvents) {
-    sections.push(`_${relevant.length - maxEvents} more event(s) available. Use context.get_source or search to retrieve._`);
+    sections.push(
+      `_${relevant.length - maxEvents} more event(s) available. Use context.get_source or search to retrieve._`,
+    );
     sections.push('');
   }
 
@@ -334,24 +324,32 @@ function buildL4(
   const sections: string[] = ['## L4 — Complete Archive', ''];
 
   sections.push(`_${events.length} total event(s) in the project ledger._`);
-  sections.push('_This layer is for on-demand retrieval. Showing the last ' + Math.min(events.length, maxEvents) + ' events._');
+  sections.push(
+    '_This layer is for on-demand retrieval. Showing the last ' +
+      Math.min(events.length, maxEvents) +
+      ' events._',
+  );
   sections.push('');
 
   const toShow = events.slice(-maxEvents);
 
   for (const event of toShow) {
-    sections.push(JSON.stringify({
-      id: event.id,
-      type: event.type,
-      seq: event.sequence,
-      ts: event.timestamp,
-      payload: event.payload,
-    }));
+    sections.push(
+      JSON.stringify({
+        id: event.id,
+        type: event.type,
+        seq: event.sequence,
+        ts: event.timestamp,
+        payload: event.payload,
+      }),
+    );
   }
 
   if (events.length > maxEvents) {
     sections.push('');
-    sections.push(`_${events.length - maxEvents} earlier event(s) omitted. Retrieve with event IDs or search._`);
+    sections.push(
+      `_${events.length - maxEvents} earlier event(s) omitted. Retrieve with event IDs or search._`,
+    );
   }
 
   sections.push('');
@@ -377,7 +375,11 @@ export function buildContextPackage(options: ContextBuildOptions): ContextPackag
   }
 
   const events = loadAllEvents(workspaceRoot, projectId);
-  const requestedLayers = options.layers ?? [ContextLayers.L0_ORIENTATION, ContextLayers.L1_ACTIVE_STATE, ContextLayers.L2_GOVERNING];
+  const requestedLayers = options.layers ?? [
+    ContextLayers.L0_ORIENTATION,
+    ContextLayers.L1_ACTIVE_STATE,
+    ContextLayers.L2_GOVERNING,
+  ];
   const budget = options.tokenBudget ?? 0;
 
   // Build all requested layers
@@ -395,7 +397,9 @@ export function buildContextPackage(options: ContextBuildOptions): ContextPackag
         builtLayers.push(buildL2(workspaceRoot, projectId, events));
         break;
       case ContextLayers.L3_EVIDENCE:
-        builtLayers.push(buildL3(workspaceRoot, projectId, events, options.focusTopic, options.maxEvidenceEvents));
+        builtLayers.push(
+          buildL3(workspaceRoot, projectId, events, options.focusTopic, options.maxEvidenceEvents),
+        );
         break;
       case ContextLayers.L4_ARCHIVE:
         builtLayers.push(buildL4(workspaceRoot, projectId, events, options.maxArchiveEvents));
@@ -468,11 +472,17 @@ export function buildSingleLayer(
   const events = loadAllEvents(workspaceRoot, projectId);
 
   switch (layer) {
-    case ContextLayers.L0_ORIENTATION: return buildL0(workspaceRoot, projectId, events);
-    case ContextLayers.L1_ACTIVE_STATE: return buildL1(workspaceRoot, projectId, events);
-    case ContextLayers.L2_GOVERNING: return buildL2(workspaceRoot, projectId, events);
-    case ContextLayers.L3_EVIDENCE: return buildL3(workspaceRoot, projectId, events, focusTopic, maxEvents);
-    case ContextLayers.L4_ARCHIVE: return buildL4(workspaceRoot, projectId, events, maxEvents);
-    default: throw new Error(`Unknown layer: ${layer}`);
+    case ContextLayers.L0_ORIENTATION:
+      return buildL0(workspaceRoot, projectId, events);
+    case ContextLayers.L1_ACTIVE_STATE:
+      return buildL1(workspaceRoot, projectId, events);
+    case ContextLayers.L2_GOVERNING:
+      return buildL2(workspaceRoot, projectId, events);
+    case ContextLayers.L3_EVIDENCE:
+      return buildL3(workspaceRoot, projectId, events, focusTopic, maxEvents);
+    case ContextLayers.L4_ARCHIVE:
+      return buildL4(workspaceRoot, projectId, events, maxEvents);
+    default:
+      throw new Error(`Unknown layer: ${layer}`);
   }
 }

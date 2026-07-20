@@ -2,18 +2,27 @@ import { Command } from 'commander';
 import {
   DEFAULT_ROOT,
   getState,
-  createDecision, listDecisions, getDecision, rejectDecision, supersedeDecision,
-  DecisionStatuses,
-  createTask, listTasks, updateTaskStatus, getTask,
-  TaskStatuses, VALID_TASK_STATUSES,
-  recordAttempt, listAttempts, getFailedAttempts, getAttempt,
+  createDecision,
+  listDecisions,
+  rejectDecision,
+  supersedeDecision,
+  createTask,
+  listTasks,
+  updateTaskStatus,
+  VALID_TASK_STATUSES,
+  recordAttempt,
+  listAttempts,
+  getFailedAttempts,
   AttemptOutcomes,
 } from '@continuum/core';
 import type { TaskStatus, AttemptOutcome } from '@continuum/core';
 
 function requireProject(root: string): string {
   const s = getState(root);
-  if (!s.activeProjectId) { console.error('\n✗ No active project.\n'); process.exit(1); }
+  if (!s.activeProjectId) {
+    console.error('\n✗ No active project.\n');
+    process.exit(1);
+  }
   return s.activeProjectId;
 }
 
@@ -24,7 +33,8 @@ export function registerTrackCommand(program: Command): void {
 
   const dec = track.command('decision').description('Track decisions');
 
-  dec.command('add')
+  dec
+    .command('add')
     .description('Record a new decision')
     .requiredOption('-c, --choice <text>', 'What was decided')
     .option('-r, --rationale <text>', 'Why this was chosen')
@@ -36,7 +46,9 @@ export function registerTrackCommand(program: Command): void {
         projectId: pid,
         choice: opts.choice,
         rationale: opts.rationale,
-        alternatives: opts.alternatives ? opts.alternatives.split(',').map((s: string) => s.trim()) : [],
+        alternatives: opts.alternatives
+          ? opts.alternatives.split(',').map((s: string) => s.trim())
+          : [],
       });
       console.log(`\n✓ Decision recorded\n`);
       console.log(`  ID:          ${d.id}`);
@@ -46,14 +58,18 @@ export function registerTrackCommand(program: Command): void {
       console.log(`  Status:      ${d.status}\n`);
     });
 
-  dec.command('list')
+  dec
+    .command('list')
     .description('List decisions')
     .option('--all', 'Include rejected/superseded', false)
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const pid = requireProject(opts.root);
       const decs = listDecisions(opts.root, pid, opts.all);
-      if (decs.length === 0) { console.log('\n  No decisions recorded.\n'); return; }
+      if (decs.length === 0) {
+        console.log('\n  No decisions recorded.\n');
+        return;
+      }
       console.log(`\n  Decisions (${decs.length}):\n`);
       for (const d of decs) {
         const icon = d.status === 'active' ? '●' : d.status === 'rejected' ? '✗' : '○';
@@ -67,26 +83,38 @@ export function registerTrackCommand(program: Command): void {
       }
     });
 
-  dec.command('reject <decisionId>')
+  dec
+    .command('reject <decisionId>')
     .description('Reject a decision')
     .requiredOption('-r, --reason <text>', 'Why it was rejected')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((id: string, opts) => {
       const pid = requireProject(opts.root);
       const d = rejectDecision(opts.root, pid, id, opts.reason);
-      if (!d) { console.error(`\n✗ Decision "${id}" not found.\n`); process.exit(1); }
+      if (!d) {
+        console.error(`\n✗ Decision "${id}" not found.\n`);
+        process.exit(1);
+      }
       console.log(`\n✓ Decision rejected: ${d.choice}\n  Reason: ${opts.reason}\n`);
     });
 
-  dec.command('supersede <oldDecisionId>')
+  dec
+    .command('supersede <oldDecisionId>')
     .description('Replace a decision with a new one')
     .requiredOption('-c, --choice <text>', 'New decision')
     .option('-r, --rationale <text>', 'Why the change')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((oldId: string, opts) => {
       const pid = requireProject(opts.root);
-      const result = supersedeDecision(opts.root, pid, oldId, { projectId: pid, choice: opts.choice, rationale: opts.rationale });
-      if (!result) { console.error(`\n✗ Decision "${oldId}" not found.\n`); process.exit(1); }
+      const result = supersedeDecision(opts.root, pid, oldId, {
+        projectId: pid,
+        choice: opts.choice,
+        rationale: opts.rationale,
+      });
+      if (!result) {
+        console.error(`\n✗ Decision "${oldId}" not found.\n`);
+        process.exit(1);
+      }
       console.log(`\n✓ Decision superseded\n`);
       console.log(`  Old: ${result.old.choice} → ${result.old.status}`);
       console.log(`  New: ${result.new.choice} (${result.new.id})\n`);
@@ -96,7 +124,8 @@ export function registerTrackCommand(program: Command): void {
 
   const tsk = track.command('task').description('Track tasks');
 
-  tsk.command('add')
+  tsk
+    .command('add')
     .description('Create a new task')
     .requiredOption('-d, --description <text>', 'Task description')
     .option('--deps <ids>', 'Comma-separated dependency task IDs')
@@ -114,7 +143,8 @@ export function registerTrackCommand(program: Command): void {
       console.log(`  Status: ${t.status}\n`);
     });
 
-  tsk.command('list')
+  tsk
+    .command('list')
     .description('List tasks')
     .option('-s, --status <status>', 'Filter by status')
     .option('--root <path>', '', DEFAULT_ROOT)
@@ -125,9 +155,17 @@ export function registerTrackCommand(program: Command): void {
         process.exit(1);
       }
       const tasks = listTasks(opts.root, pid, opts.status as TaskStatus | undefined);
-      if (tasks.length === 0) { console.log('\n  No tasks found.\n'); return; }
+      if (tasks.length === 0) {
+        console.log('\n  No tasks found.\n');
+        return;
+      }
 
-      const icons: Record<string, string> = { pending: '○', active: '◐', completed: '●', blocked: '✗' };
+      const icons: Record<string, string> = {
+        pending: '○',
+        active: '◐',
+        completed: '●',
+        blocked: '✗',
+      };
       console.log(`\n  Tasks (${tasks.length}):\n`);
       for (const t of tasks) {
         console.log(`  ${icons[t.status] ?? '?'} ${t.id}  [${t.status}]`);
@@ -139,7 +177,8 @@ export function registerTrackCommand(program: Command): void {
       }
     });
 
-  tsk.command('update <taskId>')
+  tsk
+    .command('update <taskId>')
     .description('Update task status')
     .requiredOption('-s, --status <status>', 'New status (pending, active, completed, blocked)')
     .option('-n, --note <text>', 'Status note')
@@ -151,7 +190,10 @@ export function registerTrackCommand(program: Command): void {
         process.exit(1);
       }
       const t = updateTaskStatus(opts.root, pid, taskId, opts.status as TaskStatus, opts.note);
-      if (!t) { console.error(`\n✗ Task "${taskId}" not found.\n`); process.exit(1); }
+      if (!t) {
+        console.error(`\n✗ Task "${taskId}" not found.\n`);
+        process.exit(1);
+      }
       console.log(`\n✓ Task updated: ${t.description}\n  Status: ${t.status}\n`);
     });
 
@@ -159,7 +201,8 @@ export function registerTrackCommand(program: Command): void {
 
   const att = track.command('attempt').description('Track attempts');
 
-  att.command('add')
+  att
+    .command('add')
     .description('Record an attempt')
     .requiredOption('-a, --approach <text>', 'What was tried')
     .requiredOption('-o, --outcome <outcome>', 'Outcome: success, failure, partial, abandoned')
@@ -191,7 +234,8 @@ export function registerTrackCommand(program: Command): void {
       console.log('');
     });
 
-  att.command('list')
+  att
+    .command('list')
     .description('List attempts')
     .option('--failures', 'Show only failures and abandoned', false)
     .option('--root <path>', '', DEFAULT_ROOT)
@@ -200,9 +244,17 @@ export function registerTrackCommand(program: Command): void {
       const attempts = opts.failures
         ? getFailedAttempts(opts.root, pid)
         : listAttempts(opts.root, pid);
-      if (attempts.length === 0) { console.log('\n  No attempts recorded.\n'); return; }
+      if (attempts.length === 0) {
+        console.log('\n  No attempts recorded.\n');
+        return;
+      }
 
-      const icons: Record<string, string> = { success: '✓', failure: '✗', partial: '◐', abandoned: '○' };
+      const icons: Record<string, string> = {
+        success: '✓',
+        failure: '✗',
+        partial: '◐',
+        abandoned: '○',
+      };
       console.log(`\n  Attempts (${attempts.length}):\n`);
       for (const a of attempts) {
         console.log(`  ${icons[a.outcome] ?? '?'} ${a.id}  [${a.outcome}]`);

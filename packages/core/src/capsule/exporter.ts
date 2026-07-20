@@ -19,10 +19,9 @@ import {
   readdirSync,
   statSync,
 } from 'fs';
-import { join, basename } from 'path';
+import { join } from 'path';
 import { createHash } from 'crypto';
 import { buildManifest } from './builder';
-import type { BuildManifestInput } from './builder';
 import type { CapsuleFileHash, CapsuleManifest } from './types';
 
 // ─── Export options ─────────────────────────────────────────
@@ -89,8 +88,11 @@ export function exportCapsule(options: ExportOptions): ExportResult {
 
   if (!existsSync(projectDir)) {
     return {
-      capsulePath: '', capsuleId: '', manifest: null as unknown as CapsuleManifest,
-      filesCopied: 0, totalSize: 0,
+      capsulePath: '',
+      capsuleId: '',
+      manifest: null as unknown as CapsuleManifest,
+      filesCopied: 0,
+      totalSize: 0,
       error: `Project directory not found: ${projectDir}`,
     };
   }
@@ -112,8 +114,11 @@ export function exportCapsule(options: ExportOptions): ExportResult {
     mkdirSync(capsulePath, { recursive: true });
   } catch (err) {
     return {
-      capsulePath, capsuleId: manifest.capsuleId, manifest,
-      filesCopied: 0, totalSize: 0,
+      capsulePath,
+      capsuleId: manifest.capsuleId,
+      manifest,
+      filesCopied: 0,
+      totalSize: 0,
       error: `Cannot create capsule directory: ${(err as Error).message}`,
     };
   }
@@ -152,7 +157,11 @@ export function exportCapsule(options: ExportOptions): ExportResult {
   const stateDest = join(capsulePath, 'state.json');
   if (copyIfExists(stateSrc, stateDest)) {
     filesCopied++;
-    integrityFiles.push({ path: 'state.json', hash: hashFile(stateDest), size: statSync(stateDest).size });
+    integrityFiles.push({
+      path: 'state.json',
+      hash: hashFile(stateDest),
+      size: statSync(stateDest).size,
+    });
   }
 
   // ── Copy tracking files (ST1) ───────────────────────────
@@ -172,7 +181,11 @@ export function exportCapsule(options: ExportOptions): ExportResult {
   const registryDest = join(capsulePath, 'artifacts.json');
   if (copyIfExists(registrySrc, registryDest)) {
     filesCopied++;
-    integrityFiles.push({ path: 'artifacts.json', hash: hashFile(registryDest), size: statSync(registryDest).size });
+    integrityFiles.push({
+      path: 'artifacts.json',
+      hash: hashFile(registryDest),
+      size: statSync(registryDest).size,
+    });
   }
 
   if (options.includeArtifactContent) {
@@ -225,7 +238,11 @@ export function exportCapsule(options: ExportOptions): ExportResult {
   const projManifestDest = join(capsulePath, 'project.json');
   if (copyIfExists(projManifestSrc, projManifestDest)) {
     filesCopied++;
-    integrityFiles.push({ path: 'project.json', hash: hashFile(projManifestDest), size: statSync(projManifestDest).size });
+    integrityFiles.push({
+      path: 'project.json',
+      hash: hashFile(projManifestDest),
+      size: statSync(projManifestDest).size,
+    });
   }
 
   // ── Create evaluations directory (placeholder) ──────────
@@ -279,14 +296,26 @@ export function verifyCapsuleIntegrity(capsulePath: string): VerifyCapsuleResult
   const integrityPath = join(capsulePath, 'integrity.json');
 
   if (!existsSync(integrityPath)) {
-    return { valid: false, filesChecked: 0, mismatches: [], missing: ['integrity.json'], error: 'integrity.json not found.' };
+    return {
+      valid: false,
+      filesChecked: 0,
+      mismatches: [],
+      missing: ['integrity.json'],
+      error: 'integrity.json not found.',
+    };
   }
 
   let integrity: { files: CapsuleFileHash[] };
   try {
     integrity = JSON.parse(readFileSync(integrityPath, 'utf-8'));
   } catch {
-    return { valid: false, filesChecked: 0, mismatches: [], missing: [], error: 'integrity.json is not valid JSON.' };
+    return {
+      valid: false,
+      filesChecked: 0,
+      mismatches: [],
+      missing: [],
+      error: 'integrity.json is not valid JSON.',
+    };
   }
 
   const mismatches: Array<{ path: string; expected: string; actual: string }> = [];

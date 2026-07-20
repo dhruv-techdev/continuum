@@ -28,9 +28,7 @@ function ensureSynced(root: string, projectId: string): void {
 }
 
 export function registerEventCommand(program: Command): void {
-  const event = program
-    .command('event')
-    .description('Retrieve events by ID');
+  const event = program.command('event').description('Retrieve events by ID');
 
   // ── event show <id> ─────────────────────────────────────
 
@@ -54,18 +52,24 @@ export function registerEventCommand(program: Command): void {
       }
 
       if (opts.json) {
-        console.log(JSON.stringify({
-          id: entry.id,
-          projectId: entry.projectId,
-          sessionId: entry.sessionId,
-          type: entry.type,
-          sequence: entry.sequence,
-          timestamp: entry.timestamp,
-          source: entry.source,
-          hash: entry.hash,
-          schemaVersion: entry.schemaVersion,
-          payload: entry.payload,
-        }, null, 2));
+        console.log(
+          JSON.stringify(
+            {
+              id: entry.id,
+              projectId: entry.projectId,
+              sessionId: entry.sessionId,
+              type: entry.type,
+              sequence: entry.sequence,
+              timestamp: entry.timestamp,
+              source: entry.source,
+              hash: entry.hash,
+              schemaVersion: entry.schemaVersion,
+              payload: entry.payload,
+            },
+            null,
+            2,
+          ),
+        );
         return;
       }
 
@@ -101,9 +105,15 @@ export function registerEventCommand(program: Command): void {
 
       if (opts.json) {
         const events = entries.map((e) => ({
-          id: e.id, projectId: e.projectId, sessionId: e.sessionId,
-          type: e.type, sequence: e.sequence, timestamp: e.timestamp,
-          source: e.source, hash: e.hash, schemaVersion: e.schemaVersion,
+          id: e.id,
+          projectId: e.projectId,
+          sessionId: e.sessionId,
+          type: e.type,
+          sequence: e.sequence,
+          timestamp: e.timestamp,
+          source: e.source,
+          hash: e.hash,
+          schemaVersion: e.schemaVersion,
           payload: e.payload,
         }));
         console.log(JSON.stringify(events, null, 2));
@@ -135,5 +145,8 @@ export function registerEventCommand(program: Command): void {
 
 function indent(text: string, spaces: number): string {
   const pad = ' '.repeat(spaces);
-  return text.split('\n').map((line) => pad + line).join('\n');
+  return text
+    .split('\n')
+    .map((line) => pad + line)
+    .join('\n');
 }

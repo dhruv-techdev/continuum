@@ -8,11 +8,7 @@
  * Model-graded evaluation will be added in a later phase.
  */
 
-import {
-  CheckDimensions,
-  CheckStatuses,
-  Criticalities,
-} from './types';
+import { CheckDimensions, CheckStatuses, Criticalities } from './types';
 import type {
   VerificationCheck,
   VerificationReport,
@@ -35,9 +31,7 @@ export function scoreCheck(check: VerificationCheck): number {
   const actual = check.actualAnswer.toLowerCase();
 
   // Extract key terms from expected answer (words > 3 chars)
-  const expectedWords = new Set(
-    expected.split(/\W+/).filter((w) => w.length > 3),
-  );
+  const expectedWords = new Set(expected.split(/\W+/).filter((w) => w.length > 3));
 
   if (expectedWords.size === 0) return actual.length > 0 ? 0.5 : 0;
 
@@ -118,7 +112,10 @@ const DIMENSION_TARGETS: Record<string, number> = {
   continuation_readiness: 0.9,
 };
 
-function computeDimensionScore(checks: VerificationCheck[], dimension: CheckDimension): DimensionScore {
+function computeDimensionScore(
+  checks: VerificationCheck[],
+  dimension: CheckDimension,
+): DimensionScore {
   const dimChecks = checks.filter((c) => c.dimension === dimension);
   const passed = dimChecks.filter((c) => c.status === CheckStatuses.PASSED).length;
   const failed = dimChecks.filter((c) => c.status === CheckStatuses.FAILED).length;
@@ -160,9 +157,10 @@ export function buildReport(
   const scoredChecks = checks.filter((c) => c.score !== null);
 
   // Overall scores
-  const correctness = scoredChecks.length > 0
-    ? scoredChecks.reduce((sum, c) => sum + (c.score ?? 0), 0) / scoredChecks.length
-    : 0;
+  const correctness =
+    scoredChecks.length > 0
+      ? scoredChecks.reduce((sum, c) => sum + (c.score ?? 0), 0) / scoredChecks.length
+      : 0;
 
   const completeness = totalChecks > 0 ? passedChecks / totalChecks : 0;
 
@@ -176,9 +174,10 @@ export function buildReport(
     (c) => c.status === CheckStatuses.FAILED && c.criticality === Criticalities.CRITICAL,
   ).length;
 
-  const overallScore = dimensionScores.length > 0
-    ? dimensionScores.reduce((sum, d) => sum + d.score, 0) / dimensionScores.length
-    : 0;
+  const overallScore =
+    dimensionScores.length > 0
+      ? dimensionScores.reduce((sum, d) => sum + d.score, 0) / dimensionScores.length
+      : 0;
 
   // Verdict: pass only if all critical checks pass and no unresolved contradictions
   const criticalFailures = checks.filter(

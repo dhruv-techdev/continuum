@@ -19,14 +19,12 @@ import {
   readdirSync,
   statSync,
 } from 'fs';
-import { join, basename } from 'path';
-import { createHash } from 'crypto';
+import { join } from 'path';
 import { validateManifest, isCompatibleCapsuleVersion } from './validator';
 import { verifyCapsuleIntegrity } from './exporter';
-import { verifyEventHash } from '../events/hash';
 import { validateEvent } from '../events/validation';
 import { generateProjectId } from '../projects/types';
-import type { CapsuleManifest, ManifestValidationError } from './types';
+import type { CapsuleManifest } from './types';
 import type { ContinuumEvent } from '../events/types';
 
 // ─── Validation phases ──────────────────────────────────────
@@ -81,30 +79,50 @@ function validateStructure(capsulePath: string): ImportIssue[] {
   const issues: ImportIssue[] = [];
 
   if (!existsSync(capsulePath)) {
-    issues.push({ phase: ImportPhases.STRUCTURE, severity: 'error', message: `Capsule path not found: ${capsulePath}` });
+    issues.push({
+      phase: ImportPhases.STRUCTURE,
+      severity: 'error',
+      message: `Capsule path not found: ${capsulePath}`,
+    });
     return issues;
   }
 
   const stat = statSync(capsulePath);
   if (!stat.isDirectory()) {
-    issues.push({ phase: ImportPhases.STRUCTURE, severity: 'error', message: 'Capsule path must be a directory (*.ctx).' });
+    issues.push({
+      phase: ImportPhases.STRUCTURE,
+      severity: 'error',
+      message: 'Capsule path must be a directory (*.ctx).',
+    });
     return issues;
   }
 
   // Required files
   const manifestPath = join(capsulePath, 'manifest.json');
   if (!existsSync(manifestPath)) {
-    issues.push({ phase: ImportPhases.STRUCTURE, severity: 'error', message: 'Missing manifest.json — not a valid capsule.' });
+    issues.push({
+      phase: ImportPhases.STRUCTURE,
+      severity: 'error',
+      message: 'Missing manifest.json — not a valid capsule.',
+    });
   }
 
   const integrityPath = join(capsulePath, 'integrity.json');
   if (!existsSync(integrityPath)) {
-    issues.push({ phase: ImportPhases.STRUCTURE, severity: 'warning', message: 'Missing integrity.json — cannot verify file hashes.' });
+    issues.push({
+      phase: ImportPhases.STRUCTURE,
+      severity: 'warning',
+      message: 'Missing integrity.json — cannot verify file hashes.',
+    });
   }
 
   const eventsPath = join(capsulePath, 'events.jsonl');
   if (!existsSync(eventsPath)) {
-    issues.push({ phase: ImportPhases.STRUCTURE, severity: 'warning', message: 'Missing events.jsonl — capsule has no event history.' });
+    issues.push({
+      phase: ImportPhases.STRUCTURE,
+      severity: 'warning',
+      message: 'Missing events.jsonl — capsule has no event history.',
+    });
   }
 
   return issues;
@@ -112,7 +130,10 @@ function validateStructure(capsulePath: string): ImportIssue[] {
 
 // ─── ST1: Schema validation ─────────────────────────────────
 
-function validateSchema(capsulePath: string): { manifest: CapsuleManifest | null; issues: ImportIssue[] } {
+function validateSchema(capsulePath: string): {
+  manifest: CapsuleManifest | null;
+  issues: ImportIssue[];
+} {
   const issues: ImportIssue[] = [];
   const manifestPath = join(capsulePath, 'manifest.json');
 
@@ -124,7 +145,11 @@ function validateSchema(capsulePath: string): { manifest: CapsuleManifest | null
   try {
     raw = readFileSync(manifestPath, 'utf-8');
   } catch (err) {
-    issues.push({ phase: ImportPhases.SCHEMA, severity: 'error', message: `Cannot read manifest.json: ${(err as Error).message}` });
+    issues.push({
+      phase: ImportPhases.SCHEMA,
+      severity: 'error',
+      message: `Cannot read manifest.json: ${(err as Error).message}`,
+    });
     return { manifest: null, issues };
   }
 
@@ -132,7 +157,11 @@ function validateSchema(capsulePath: string): { manifest: CapsuleManifest | null
   try {
     parsed = JSON.parse(raw);
   } catch {
-    issues.push({ phase: ImportPhases.SCHEMA, severity: 'error', message: 'manifest.json is not valid JSON.' });
+    issues.push({
+      phase: ImportPhases.SCHEMA,
+      severity: 'error',
+      message: 'manifest.json is not valid JSON.',
+    });
     return { manifest: null, issues };
   }
 
@@ -151,7 +180,11 @@ function validateSchema(capsulePath: string): { manifest: CapsuleManifest | null
   // Validate all manifest fields
   const manifestErrors = validateManifest(parsed);
   for (const err of manifestErrors) {
-    issues.push({ phase: ImportPhases.SCHEMA, severity: 'error', message: `${err.field}: ${err.message}` });
+    issues.push({
+      phase: ImportPhases.SCHEMA,
+      severity: 'error',
+      message: `${err.field}: ${err.message}`,
+    });
   }
 
   if (issues.some((i) => i.severity === 'error')) {
@@ -173,7 +206,11 @@ function verifyIntegrity(capsulePath: string): ImportIssue[] {
   }
 
   for (const missing of result.missing) {
-    issues.push({ phase: ImportPhases.INTEGRITY, severity: 'error', message: `File missing from capsule: ${missing}` });
+    issues.push({
+      phase: ImportPhases.INTEGRITY,
+      severity: 'error',
+      message: `File missing from capsule: ${missing}`,
+    });
   }
 
   for (const mismatch of result.mismatches) {
@@ -211,22 +248,38 @@ function verifyEvents(capsulePath: string): { events: ContinuumEvent[]; issues: 
     try {
       event = JSON.parse(trimmed);
     } catch (err) {
-      issues.push({ phase: ImportPhases.EVENTS, severity: 'error', message: `Line ${lineNum}: invalid JSON — ${(err as Error).message}` });
+      issues.push({
+        phase: ImportPhases.EVENTS,
+        severity: 'error',
+        message: `Line ${lineNum}: invalid JSON — ${(err as Error).message}`,
+      });
       continue;
     }
 
     // Validate event schema
     const validationErrors = validateEvent(event);
     // Separate hash errors for clearer reporting
-    const hashErrors = validationErrors.filter((e) => e.field === 'hash' && e.message.includes('modified'));
-    const otherErrors = validationErrors.filter((e) => !(e.field === 'hash' && e.message.includes('modified')));
+    const hashErrors = validationErrors.filter(
+      (e) => e.field === 'hash' && e.message.includes('modified'),
+    );
+    const otherErrors = validationErrors.filter(
+      (e) => !(e.field === 'hash' && e.message.includes('modified')),
+    );
 
     for (const err of otherErrors) {
-      issues.push({ phase: ImportPhases.EVENTS, severity: 'error', message: `Line ${lineNum} (${event.id ?? '?'}): ${err.field} — ${err.message}` });
+      issues.push({
+        phase: ImportPhases.EVENTS,
+        severity: 'error',
+        message: `Line ${lineNum} (${event.id ?? '?'}): ${err.field} — ${err.message}`,
+      });
     }
 
     if (hashErrors.length > 0) {
-      issues.push({ phase: ImportPhases.EVENTS, severity: 'error', message: `Line ${lineNum} (${event.id ?? '?'}): content hash does not match. Event may have been tampered with.` });
+      issues.push({
+        phase: ImportPhases.EVENTS,
+        severity: 'error',
+        message: `Line ${lineNum} (${event.id ?? '?'}): content hash does not match. Event may have been tampered with.`,
+      });
     }
 
     if (otherErrors.length === 0 && hashErrors.length === 0) {
@@ -255,7 +308,11 @@ function doImport(
     mkdirSync(projectDir, { recursive: true });
     mkdirSync(join(projectDir, 'sessions'), { recursive: true });
   } catch (err) {
-    issues.push({ phase: ImportPhases.IMPORT, severity: 'error', message: `Cannot create project directory: ${(err as Error).message}` });
+    issues.push({
+      phase: ImportPhases.IMPORT,
+      severity: 'error',
+      message: `Cannot create project directory: ${(err as Error).message}`,
+    });
     return { projectId, sessionsImported: 0, issues };
   }
 
@@ -270,7 +327,11 @@ function doImport(
     originalProjectId: manifest.project.id,
   };
 
-  writeFileSync(join(projectDir, 'project.json'), JSON.stringify(projectMeta, null, 2) + '\n', 'utf-8');
+  writeFileSync(
+    join(projectDir, 'project.json'),
+    JSON.stringify(projectMeta, null, 2) + '\n',
+    'utf-8',
+  );
 
   // Group events by session
   const eventsBySession = new Map<string, ContinuumEvent[]>();
@@ -317,7 +378,11 @@ function doImport(
       }
     }
 
-    writeFileSync(join(sessionDir, 'session.json'), JSON.stringify(sessionMeta, null, 2) + '\n', 'utf-8');
+    writeFileSync(
+      join(sessionDir, 'session.json'),
+      JSON.stringify(sessionMeta, null, 2) + '\n',
+      'utf-8',
+    );
 
     // Write events.jsonl
     const ledgerLines = sessionEvents.map((e) => JSON.stringify(e)).join('\n');
@@ -327,7 +392,13 @@ function doImport(
   }
 
   // Copy optional files from capsule
-  const optionalFiles = ['state.json', 'decisions.json', 'tasks.json', 'attempts.json', 'artifacts.json'];
+  const optionalFiles = [
+    'state.json',
+    'decisions.json',
+    'tasks.json',
+    'attempts.json',
+    'artifacts.json',
+  ];
   for (const filename of optionalFiles) {
     const srcPath = join(capsulePath, filename === 'state.json' ? 'state.json' : filename);
     const destPath = join(projectDir, filename === 'state.json' ? 'working-state.json' : filename);
@@ -336,7 +407,11 @@ function doImport(
       try {
         copyFileSync(srcPath, destPath);
       } catch {
-        issues.push({ phase: ImportPhases.IMPORT, severity: 'warning', message: `Could not copy ${filename}.` });
+        issues.push({
+          phase: ImportPhases.IMPORT,
+          severity: 'warning',
+          message: `Could not copy ${filename}.`,
+        });
       }
     }
   }
@@ -356,7 +431,11 @@ function doImport(
         }
       }
     } catch {
-      issues.push({ phase: ImportPhases.IMPORT, severity: 'warning', message: 'Could not copy some artifact content.' });
+      issues.push({
+        phase: ImportPhases.IMPORT,
+        severity: 'warning',
+        message: 'Could not copy some artifact content.',
+      });
     }
   }
 
@@ -443,13 +522,11 @@ export function importCapsule(options: CapsuleImportOptions): CapsuleImportResul
     return result;
   }
 
-  const { projectId, sessionsImported, issues: importIssues } = doImport(
-    options.workspaceRoot,
-    options.capsulePath,
-    manifest,
-    validEvents,
-    options.title,
-  );
+  const {
+    projectId,
+    sessionsImported,
+    issues: importIssues,
+  } = doImport(options.workspaceRoot, options.capsulePath, manifest, validEvents, options.title);
 
   result.issues.push(...importIssues);
 

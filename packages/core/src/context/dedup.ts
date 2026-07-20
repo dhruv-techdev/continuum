@@ -117,8 +117,12 @@ export function deduplicateItems(items: ScoredItem[]): DeduplicatedItem[] {
  */
 export function formatDeduplicatedItem(item: DeduplicatedItem): string {
   const merged = item.mergedCount > 0 ? ` [${item.mergedCount + 1} sources]` : '';
-  const refs = item.allSourceIds.length > 0
-    ? ` (refs: ${item.allSourceIds.slice(0, 3).map((id) => id.slice(0, 12)).join(', ')}${item.allSourceIds.length > 3 ? '…' : ''})`
-    : '';
+  const refs =
+    item.allSourceIds.length > 0
+      ? ` (refs: ${item.allSourceIds
+          .slice(0, 3)
+          .map((id) => id.slice(0, 12))
+          .join(', ')}${item.allSourceIds.length > 3 ? '…' : ''})`
+      : '';
   return `- ${item.text}${merged}${refs}`;
 }

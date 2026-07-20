@@ -7,32 +7,26 @@
  */
 
 import {
-  DEFAULT_ROOT,
   getState,
   getProject,
-  listProjects,
   listSessions,
   openLedger,
   buildContextPackage,
-  buildSingleLayer,
   ContextLayers,
   extractWorkingState,
   loadWorkingState,
   saveWorkingState,
   getActiveStatements,
   listDecisions,
-  getDecision,
   listTasks,
   listAttempts,
   getFailedAttempts,
-  getAttempt,
   openDB,
   closeDB,
   ensureFTS,
   search,
   recoverWorkspace,
   countIndexed,
-  getEventById,
 } from '@continuum/core';
 import type { ContinuumEvent } from '@continuum/core';
 
@@ -78,17 +72,22 @@ export interface ToolDef {
 
 export const contextResume: ToolDef = {
   name: 'context.resume',
-  description: 'Return the task-specific bootstrap package (L0+L1+L2) for continuing work. This is the first tool to call when resuming a project.',
+  description:
+    'Return the task-specific bootstrap package (L0+L1+L2) for continuing work. This is the first tool to call when resuming a project.',
   inputSchema: {
     type: 'object',
     properties: {
       project_id: { type: 'string', description: 'Project ID (uses active project if omitted)' },
-      token_budget: { type: 'number', description: 'Max tokens for the context package (0 = unlimited)' },
+      token_budget: {
+        type: 'number',
+        description: 'Max tokens for the context package (0 = unlimited)',
+      },
     },
   },
   handler: (args, root) => {
     const projectId = resolveProjectId(root, args.project_id as string | undefined);
-    if (!projectId) return { error: 'No active project. Provide project_id or select a project first.' };
+    if (!projectId)
+      return { error: 'No active project. Provide project_id or select a project first.' };
 
     const project = getProject(root, projectId);
     if (!project) return { error: `Project "${projectId}" not found.` };
@@ -97,7 +96,11 @@ export const contextResume: ToolDef = {
       workspaceRoot: root,
       projectId,
       tokenBudget: (args.token_budget as number) ?? 0,
-      layers: [ContextLayers.L0_ORIENTATION, ContextLayers.L1_ACTIVE_STATE, ContextLayers.L2_GOVERNING],
+      layers: [
+        ContextLayers.L0_ORIENTATION,
+        ContextLayers.L1_ACTIVE_STATE,
+        ContextLayers.L2_GOVERNING,
+      ],
     });
 
     return {
@@ -132,15 +135,31 @@ export const contextGetState: ToolDef = {
     return {
       project_id: projectId,
       total_events: state.totalEventsProcessed,
-      objectives: state.objectives.filter((s) => s.status === 'active').map((s) => ({ text: s.text, confidence: s.confidence, sources: s.sourceEventIds })),
-      requirements: (state.requirements ?? []).filter((s) => s.status === 'active').map((s) => ({ text: s.text, sources: s.sourceEventIds })),
-      constraints: state.constraints.filter((s) => s.status === 'active').map((s) => ({ text: s.text, sources: s.sourceEventIds })),
-      next_actions: state.nextActions.filter((s) => s.status === 'active').map((s) => ({ text: s.text, sources: s.sourceEventIds })),
-      open_questions: state.openQuestions.filter((s) => s.status === 'active').map((s) => ({ text: s.text, sources: s.sourceEventIds })),
+      objectives: state.objectives
+        .filter((s) => s.status === 'active')
+        .map((s) => ({ text: s.text, confidence: s.confidence, sources: s.sourceEventIds })),
+      requirements: (state.requirements ?? [])
+        .filter((s) => s.status === 'active')
+        .map((s) => ({ text: s.text, sources: s.sourceEventIds })),
+      constraints: state.constraints
+        .filter((s) => s.status === 'active')
+        .map((s) => ({ text: s.text, sources: s.sourceEventIds })),
+      next_actions: state.nextActions
+        .filter((s) => s.status === 'active')
+        .map((s) => ({ text: s.text, sources: s.sourceEventIds })),
+      open_questions: state.openQuestions
+        .filter((s) => s.status === 'active')
+        .map((s) => ({ text: s.text, sources: s.sourceEventIds })),
       tasks: {
-        active: tasks.filter((t) => t.status === 'active').map((t) => ({ id: t.id, description: t.description })),
-        blocked: tasks.filter((t) => t.status === 'blocked').map((t) => ({ id: t.id, description: t.description, reason: t.blockedReason })),
-        pending: tasks.filter((t) => t.status === 'pending').map((t) => ({ id: t.id, description: t.description })),
+        active: tasks
+          .filter((t) => t.status === 'active')
+          .map((t) => ({ id: t.id, description: t.description })),
+        blocked: tasks
+          .filter((t) => t.status === 'blocked')
+          .map((t) => ({ id: t.id, description: t.description, reason: t.blockedReason })),
+        pending: tasks
+          .filter((t) => t.status === 'pending')
+          .map((t) => ({ id: t.id, description: t.description })),
         completed_count: tasks.filter((t) => t.status === 'completed').length,
       },
       active_statement_count: active.length,
@@ -152,13 +171,17 @@ export const contextGetState: ToolDef = {
 
 export const contextSearch: ToolDef = {
   name: 'context.search',
-  description: 'Search across raw events, derived state, entities, and artifacts using full-text search.',
+  description:
+    'Search across raw events, derived state, entities, and artifacts using full-text search.',
   inputSchema: {
     type: 'object',
     properties: {
       query: { type: 'string', description: 'Search query' },
       project_id: { type: 'string', description: 'Project ID (uses active project if omitted)' },
-      type: { type: 'string', description: 'Filter by event type (message, tool_call, command, etc.)' },
+      type: {
+        type: 'string',
+        description: 'Filter by event type (message, tool_call, command, etc.)',
+      },
       limit: { type: 'number', description: 'Max results (default 10)' },
     },
     required: ['query'],
@@ -205,7 +228,8 @@ export const contextSearch: ToolDef = {
 
 export const contextGetSource: ToolDef = {
   name: 'context.get_source',
-  description: 'Return the untouched source payload for one or more event IDs. Use this to verify any derived claim.',
+  description:
+    'Return the untouched source payload for one or more event IDs. Use this to verify any derived claim.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -233,7 +257,14 @@ export const contextGetSource: ToolDef = {
       allEvents.push(...events);
     }
 
-    const found: Array<{ id: string; type: string; sequence: number; timestamp: string; source: string; payload: unknown }> = [];
+    const found: Array<{
+      id: string;
+      type: string;
+      sequence: number;
+      timestamp: string;
+      source: string;
+      payload: unknown;
+    }> = [];
     const missing: string[] = [];
 
     for (const id of eventIds) {
@@ -265,7 +296,10 @@ export const contextGetDecisions: ToolDef = {
     type: 'object',
     properties: {
       project_id: { type: 'string', description: 'Project ID (uses active project if omitted)' },
-      include_inactive: { type: 'boolean', description: 'Include rejected and superseded decisions (default false)' },
+      include_inactive: {
+        type: 'boolean',
+        description: 'Include rejected and superseded decisions (default false)',
+      },
     },
   },
   handler: (args, root) => {
@@ -296,12 +330,16 @@ export const contextGetDecisions: ToolDef = {
 
 export const contextGetAttempts: ToolDef = {
   name: 'context.get_attempts',
-  description: 'Return previous approaches, failures, and outcomes so that already-failed work is not repeated.',
+  description:
+    'Return previous approaches, failures, and outcomes so that already-failed work is not repeated.',
   inputSchema: {
     type: 'object',
     properties: {
       project_id: { type: 'string', description: 'Project ID (uses active project if omitted)' },
-      failures_only: { type: 'boolean', description: 'Only return failed and abandoned attempts (default false)' },
+      failures_only: {
+        type: 'boolean',
+        description: 'Only return failed and abandoned attempts (default false)',
+      },
     },
   },
   handler: (args, root) => {

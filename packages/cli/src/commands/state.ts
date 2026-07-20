@@ -13,8 +13,6 @@ import {
   correctStatement,
   rejectStatement,
   getActiveStatements,
-  getCorrectionChain,
-  ConfidenceLevels,
   StatementStatuses,
   VALID_CATEGORIES,
 } from '@continuum/core';
@@ -58,15 +56,30 @@ function ensureState(root: string, projectId: string, refresh: boolean): Working
 }
 
 function formatStatement(s: Statement, showProvenance: boolean): string {
-  const statusIcon = s.status === 'active' ? '●' : s.status === 'user_corrected' ? '✎' : s.status === 'rejected' ? '✗' : '○';
+  const statusIcon =
+    s.status === 'active'
+      ? '●'
+      : s.status === 'user_corrected'
+        ? '✎'
+        : s.status === 'rejected'
+          ? '✗'
+          : '○';
   const conf = s.confidence === 'high' ? '' : ` [${s.confidence}]`;
-  const src = showProvenance && s.sourceEventIds.length > 0 ? ` ← ${s.sourceEventIds[0].slice(0, 16)}…` : '';
+  const src =
+    showProvenance && s.sourceEventIds.length > 0 ? ` ← ${s.sourceEventIds[0].slice(0, 16)}…` : '';
   const note = s.correctionNote ? ` (${s.correctionNote})` : '';
   return `    ${statusIcon} ${s.text}${conf}${src}${note}`;
 }
 
-function formatSection(statements: Statement[], label: string, showProvenance: boolean, showAll: boolean): string {
-  const visible = showAll ? statements : statements.filter((s) => s.status === StatementStatuses.ACTIVE);
+function formatSection(
+  statements: Statement[],
+  label: string,
+  showProvenance: boolean,
+  showAll: boolean,
+): string {
+  const visible = showAll
+    ? statements
+    : statements.filter((s) => s.status === StatementStatuses.ACTIVE);
   if (visible.length === 0) return '';
 
   const lines = [`  ${label} (${visible.length}):\n`];
@@ -82,7 +95,8 @@ export function registerStateCommand(program: Command): void {
 
   // ── show ────────────────────────────────────────────────
 
-  state.command('show')
+  state
+    .command('show')
     .description('Show the current extracted working state')
     .option('--refresh', 'Re-extract from events (ST3)', false)
     .option('--all', 'Include corrected/rejected statements', false)
@@ -96,7 +110,9 @@ export function registerStateCommand(program: Command): void {
       const active = getActiveStatements(working);
 
       console.log(`\n─── Working State: ${project.title}`);
-      console.log(`    Version: ${working.stateVersion}  Events: ${working.totalEventsProcessed}  Active statements: ${active.length}\n`);
+      console.log(
+        `    Version: ${working.stateVersion}  Events: ${working.totalEventsProcessed}  Active statements: ${active.length}\n`,
+      );
 
       const sections = [
         formatSection(working.objectives, 'Objectives', opts.provenance, opts.all),
@@ -119,7 +135,8 @@ export function registerStateCommand(program: Command): void {
 
   // ── bootstrap ───────────────────────────────────────────
 
-  state.command('bootstrap')
+  state
+    .command('bootstrap')
     .description('Generate a bootstrap context package')
     .option('--refresh', 'Re-extract from events', false)
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
@@ -133,12 +150,12 @@ export function registerStateCommand(program: Command): void {
 
   // ── regenerate (ST3) ────────────────────────────────────
 
-  state.command('regenerate')
+  state
+    .command('regenerate')
     .description('Re-derive working state from the immutable ledger')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireActiveProject(opts.root);
-      const project = getProject(opts.root, projectId)!;
 
       const previous = loadWorkingState(opts.root, projectId);
       const events = loadAllEvents(opts.root, projectId);
@@ -163,7 +180,8 @@ export function registerStateCommand(program: Command): void {
 
   // ── correct ─────────────────────────────────────────────
 
-  state.command('correct <statementId>')
+  state
+    .command('correct <statementId>')
     .description('Correct an extracted statement')
     .option('--text <newText>', 'Corrected text')
     .option('--category <cat>', 'Corrected category')
@@ -174,7 +192,9 @@ export function registerStateCommand(program: Command): void {
       const working = ensureState(opts.root, projectId, false);
 
       if (opts.category && !VALID_CATEGORIES.includes(opts.category)) {
-        console.error(`\n✗ Invalid category "${opts.category}". Valid: ${VALID_CATEGORIES.join(', ')}\n`);
+        console.error(
+          `\n✗ Invalid category "${opts.category}". Valid: ${VALID_CATEGORIES.join(', ')}\n`,
+        );
         process.exit(1);
       }
 
@@ -204,7 +224,8 @@ export function registerStateCommand(program: Command): void {
 
   // ── reject ──────────────────────────────────────────────
 
-  state.command('reject <statementId>')
+  state
+    .command('reject <statementId>')
     .description('Reject an incorrect extracted statement')
     .option('--note <reason>', 'Reason for rejection', 'Incorrect extraction')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
@@ -228,7 +249,8 @@ export function registerStateCommand(program: Command): void {
 
   // ── history ─────────────────────────────────────────────
 
-  state.command('history')
+  state
+    .command('history')
     .description('List archived state versions')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {

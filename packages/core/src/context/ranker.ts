@@ -130,7 +130,13 @@ export function scoreDecision(dec: Decision, focusTopic?: string): ScoredItem {
     score: categoryScore + statusScore + boost,
     category: 'decision',
     sourceIds: dec.sourceEventIds,
-    scoreBreakdown: { categoryScore, confidenceScore: 0, statusScore, recencyScore: 0, relevanceBoost: boost },
+    scoreBreakdown: {
+      categoryScore,
+      confidenceScore: 0,
+      statusScore,
+      recencyScore: 0,
+      relevanceBoost: boost,
+    },
   };
 }
 
@@ -145,7 +151,13 @@ export function scoreTask(task: Task, focusTopic?: string): ScoredItem {
     score: base + statusScore + boost,
     category: 'task',
     sourceIds: task.sourceEventIds,
-    scoreBreakdown: { categoryScore: base, confidenceScore: 0, statusScore, recencyScore: 0, relevanceBoost: boost },
+    scoreBreakdown: {
+      categoryScore: base,
+      confidenceScore: 0,
+      statusScore,
+      recencyScore: 0,
+      relevanceBoost: boost,
+    },
   };
 }
 
@@ -160,7 +172,13 @@ export function scoreAttempt(att: Attempt, focusTopic?: string): ScoredItem {
     score: base + statusScore + boost,
     category: 'attempt',
     sourceIds: att.sourceEventIds,
-    scoreBreakdown: { categoryScore: base, confidenceScore: 0, statusScore, recencyScore: 0, relevanceBoost: boost },
+    scoreBreakdown: {
+      categoryScore: base,
+      confidenceScore: 0,
+      statusScore,
+      recencyScore: 0,
+      relevanceBoost: boost,
+    },
   };
 }
 

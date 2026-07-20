@@ -11,9 +11,8 @@
  */
 
 import { existsSync, readFileSync, statSync } from 'fs';
-import { verifyEventHash } from '../events/hash';
+import { join } from 'path';
 import { validateEvent } from '../events/validation';
-import type { ValidationError } from '../index';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -94,7 +93,14 @@ export function verifyLedger(ledgerPath: string): VerificationReport {
 
   const issues: VerificationIssue[] = [];
   const seenIds = new Set<string>();
-  const events: Array<{ line: number; id: string; sequence: number; timestamp: string; projectId: string; sessionId: string }> = [];
+  const events: Array<{
+    line: number;
+    id: string;
+    sequence: number;
+    timestamp: string;
+    projectId: string;
+    sessionId: string;
+  }> = [];
   let validEvents = 0;
   let lineNumber = 0;
 
@@ -123,8 +129,12 @@ export function verifyLedger(ledgerPath: string): VerificationReport {
     // 2. Schema validation
     const schemaErrors = validateEvent(event);
     // Separate hash errors from other schema errors to avoid double-reporting
-    const hashErrors = schemaErrors.filter((e) => e.field === 'hash' && e.message.includes('modified'));
-    const otherErrors = schemaErrors.filter((e) => !(e.field === 'hash' && e.message.includes('modified')));
+    const hashErrors = schemaErrors.filter(
+      (e) => e.field === 'hash' && e.message.includes('modified'),
+    );
+    const otherErrors = schemaErrors.filter(
+      (e) => !(e.field === 'hash' && e.message.includes('modified')),
+    );
 
     for (const err of otherErrors) {
       issues.push({
@@ -241,7 +251,6 @@ export function verifySessionLedger(
   projectId: string,
   sessionId: string,
 ): VerificationReport {
-  const { join } = require('path');
   const ledgerPath = join(
     workspaceRoot,
     'projects',

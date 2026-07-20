@@ -8,7 +8,10 @@ import {
   verifySessionLedger,
   IssueSeverities,
 } from '@continuum/core';
-import type { LedgerVerificationReport as VerificationReport, VerificationIssue } from '@continuum/core';
+import type {
+  LedgerVerificationReport as VerificationReport,
+  VerificationIssue,
+} from '@continuum/core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);
@@ -53,7 +56,9 @@ function formatReport(report: VerificationReport, verbose: boolean): string {
 
   if (report.issues.length > 0) {
     lines.push('');
-    lines.push(`  Issues: ${errors.length} error(s), ${warnings.length} warning(s), ${infos.length} info`);
+    lines.push(
+      `  Issues: ${errors.length} error(s), ${warnings.length} warning(s), ${infos.length} info`,
+    );
     lines.push('');
 
     const toShow = verbose ? report.issues : report.issues.slice(0, 20);
@@ -125,9 +130,7 @@ export function registerVerifyLedgerCommand(program: Command): void {
 
       for (const sessionId of sessionIds) {
         const session = getSession(opts.root, projectId, sessionId);
-        const label = session
-          ? `${session.provider}/${session.model}`
-          : sessionId;
+        const label = session ? `${session.provider}/${session.model}` : sessionId;
 
         console.log(`\n─── Session: ${sessionId} (${label})`);
 
@@ -139,7 +142,9 @@ export function registerVerifyLedgerCommand(program: Command): void {
 
       if (sessionIds.length > 1) {
         const icon = allPassed ? '✓' : '✗';
-        console.log(`${icon} ${sessionIds.length} session(s) verified. ${allPassed ? 'All passed.' : 'Some failed.'}\n`);
+        console.log(
+          `${icon} ${sessionIds.length} session(s) verified. ${allPassed ? 'All passed.' : 'Some failed.'}\n`,
+        );
       }
 
       if (!allPassed) process.exit(1);

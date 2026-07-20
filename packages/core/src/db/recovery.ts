@@ -55,10 +55,7 @@ export function recoverSession(
   }
 }
 
-export function recoverWorkspace(
-  db: MetadataDB,
-  workspaceRoot: string,
-): RecoveryResult {
+export function recoverWorkspace(db: MetadataDB, workspaceRoot: string): RecoveryResult {
   const start = Date.now();
   const result: RecoveryResult = {
     projectsSynced: 0,
@@ -93,9 +90,7 @@ export function recoverWorkspace(
         continue;
       }
 
-      const { eventsRecovered, error } = recoverSession(
-        db, workspaceRoot, project.id, session.id,
-      );
+      const { eventsRecovered, error } = recoverSession(db, workspaceRoot, project.id, session.id);
       result.eventsRecovered += eventsRecovered;
       result.eventsIndexed += eventsRecovered;
       if (error) result.errors.push(error);

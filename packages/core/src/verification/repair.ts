@@ -15,11 +15,7 @@ import { listSessions } from '../projects/session-store';
 import { openLedger } from '../ledger/event-ledger';
 import { CheckStatuses, Criticalities } from './types';
 import { scoreCheck } from './scorer';
-import type {
-  VerificationCheck,
-  VerificationReport,
-  CheckStatus,
-} from './types';
+import type { VerificationCheck, VerificationReport } from './types';
 import type { ContinuumEvent } from '../events/types';
 
 // ─── Repair status ──────────────────────────────────────────
@@ -122,14 +118,22 @@ function extractEventContent(event: ContinuumEvent): string {
   const payload = event.payload as unknown as Record<string, unknown>;
 
   switch (event.type) {
-    case 'message': return (payload.content as string) ?? '';
-    case 'tool_call': return `${payload.toolName}: ${JSON.stringify(payload.input ?? {}).slice(0, 200)}`;
-    case 'tool_result': return `${payload.toolName}: ${((payload.output as string) ?? '').slice(0, 300)}`;
-    case 'command': return `$ ${payload.command}`;
-    case 'command_output': return `[exit ${payload.exitCode ?? '?'}] ${((payload.stdout as string) ?? '').slice(0, 300)}`;
-    case 'artifact': return `${payload.action}: ${payload.uri}`;
-    case 'system': return `${payload.action}${payload.message ? ': ' + payload.message : ''}`;
-    default: return JSON.stringify(payload).slice(0, 200);
+    case 'message':
+      return (payload.content as string) ?? '';
+    case 'tool_call':
+      return `${payload.toolName}: ${JSON.stringify(payload.input ?? {}).slice(0, 200)}`;
+    case 'tool_result':
+      return `${payload.toolName}: ${((payload.output as string) ?? '').slice(0, 300)}`;
+    case 'command':
+      return `$ ${payload.command}`;
+    case 'command_output':
+      return `[exit ${payload.exitCode ?? '?'}] ${((payload.stdout as string) ?? '').slice(0, 300)}`;
+    case 'artifact':
+      return `${payload.action}: ${payload.uri}`;
+    case 'system':
+      return `${payload.action}${payload.message ? ': ' + payload.message : ''}`;
+    default:
+      return JSON.stringify(payload).slice(0, 200);
   }
 }
 
@@ -321,7 +325,9 @@ export function runRepairCycle(input: RepairCycleInput): RepairReport {
   }
 
   // Summary
-  const passedInitially = items.filter((i) => i.repairStatus === RepairStatuses.PASSED_INITIALLY).length;
+  const passedInitially = items.filter(
+    (i) => i.repairStatus === RepairStatuses.PASSED_INITIALLY,
+  ).length;
   const repaired = items.filter((i) => i.repairStatus === RepairStatuses.REPAIRED).length;
   const unresolved = items.filter((i) => i.repairStatus === RepairStatuses.UNRESOLVED).length;
   const skipped = items.filter((i) => i.repairStatus === RepairStatuses.SKIPPED).length;
