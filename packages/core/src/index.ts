@@ -17,7 +17,7 @@ export type { WorkspaceState } from './state';
 
 export { EventLedger, openLedger } from './ledger/index';
 export { verifyLedger, verifySessionLedger, IssueSeverities, IssueCategories } from './ledger/index';
-export type { IssueSeverity, IssueCategory, VerificationIssue, VerificationReport, AppendStatus, AppendResult, AppendBatchResult, LedgerReadResult, LedgerStats, IntegrityIssue } from './ledger/index';
+export type { IssueSeverity, IssueCategory, VerificationIssue, VerificationReport as LedgerVerificationReport, AppendStatus, AppendResult, AppendBatchResult, LedgerReadResult, LedgerStats, IntegrityIssue } from './ledger/index';
 
 export { StatementCategories, ConfidenceLevels, StatementStatuses, VALID_CATEGORIES, extractWorkingState, generateStatementId, generateBootstrap, saveWorkingState, loadWorkingState, listStateHistory, correctStatement, rejectStatement, getActiveStatements, getCorrectionChain } from './state-engine/index';
 export type { StatementCategory, ConfidenceLevel, StatementStatus, Statement, WorkingState, BootstrapContext, CorrectionInput, CorrectionResult } from './state-engine/index';
@@ -45,6 +45,10 @@ export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, Capsule
 
 export { ContextLayers, ALL_LAYERS, estimateTokens, trimToTokenBudget, buildContextPackage, buildSingleLayer, MODEL_PRESETS, getModelPreset, getUsableBudget, listPresetIds, scoreStatement, scoreDecision, scoreTask, scoreAttempt, rankItems, selectByBudget, deduplicateItems, formatDeduplicatedItem } from './context/index';
 export type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions, ModelPreset, ScoredItem, DeduplicatedItem } from './context/index';
+
+// Verification
+export { generateCheckId, CheckDimensions, Criticalities, CheckStatuses, generateChecks, scoreCheck, scoreChecks, buildReport, saveReport, loadLatestReport, listReports, saveChecks, loadPendingChecks } from './verification/index';
+export type { CheckDimension, Criticality, CheckStatus, VerificationCheck, DimensionScore, VerificationReport, GenerateChecksInput } from './verification/index';
 
 export { detectFormat, parseTranscript, parseJSON, parseMarkdown, normalizeToEvents, writeEventsToLedger, importTranscript, WarningTypes } from './import/index';
 export type { ParsedMessage, ParseResult, TranscriptFormat, ImportWarning, ImportResult, ImportStats, WarningType, NormalizeInput, NormalizeOutput } from './import/index';

@@ -19,6 +19,7 @@ import { registerTrackCommand } from './commands/track';
 import { registerCapsuleCommand } from './commands/capsule';
 import { registerContextCommand } from './commands/context';
 import { registerMcpCommand } from './commands/mcp';
+import { registerVerifyCommand } from './commands/verify';
 
 const program = new Command();
 
@@ -44,5 +45,6 @@ registerTrackCommand(program);
 registerCapsuleCommand(program);
 registerContextCommand(program);
 registerMcpCommand(program);
+registerVerifyCommand(program);
 
 program.parse();
