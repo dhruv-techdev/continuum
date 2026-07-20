@@ -26,3 +26,21 @@ export {
   saveChecks,
   loadPendingChecks,
 } from './persistence';
+
+export {
+  RepairStatuses,
+  identifyFailures,
+  identifyCriticalFailures,
+  retrieveEvidence,
+  buildRepairContext,
+  runRepairCycle,
+  buildRepairPackage,
+} from './repair';
+
+export type {
+  RepairStatus,
+  RepairItem,
+  RepairEvidence,
+  RepairReport,
+  RepairCycleInput,
+} from './repair';

@@ -9,8 +9,10 @@ import {
   saveReport, loadLatestReport, listReports,
   saveChecks, loadPendingChecks,
   CheckStatuses, Criticalities,
+  identifyFailures, identifyCriticalFailures,
+  buildRepairPackage, runRepairCycle, RepairStatuses,
 } from '@continuum/core';
-import type { VerificationCheck, VerificationReport, ContinuumEvent } from '@continuum/core';
+import type { VerificationCheck, VerificationReport, RepairReport, ContinuumEvent } from '@continuum/core';
 
 function requireProject(root: string): string {
   const s = getState(root);
@@ -26,7 +28,7 @@ function loadAllEvents(root: string, projectId: string): ContinuumEvent[] {
   return all;
 }
 
-function formatReport(report: VerificationReport): string {
+function formatVerificationReport(report: VerificationReport): string {
   const lines: string[] = [];
   const icon = report.passed ? '✓' : '✗';
   const verdict = report.passed ? 'PASSED' : 'FAILED';
@@ -57,22 +59,70 @@ function formatReport(report: VerificationReport): string {
       lines.push(`    ✗ ${c.question.slice(0, 80)}…${crit}`);
       lines.push(`      Expected: ${c.expectedAnswer.slice(0, 100)}`);
       if (c.actualAnswer) lines.push(`      Actual:   ${c.actualAnswer.slice(0, 100)}`);
-      lines.push(`      Score:    ${c.score?.toFixed(2) ?? '—'}`);
       lines.push('');
     }
-    if (failed.length > 10) lines.push(`    ... and ${failed.length - 10} more failed checks.\n`);
+  }
+
+  return lines.join('\n');
+}
+
+function formatRepairReport(report: RepairReport): string {
+  const lines: string[] = [];
+  const icon = report.verified ? '✓' : '✗';
+  const verdict = report.verified ? 'VERIFIED' : 'NOT VERIFIED';
+
+  lines.push(`\n${icon} Transfer Repair: ${verdict}\n`);
+  lines.push(`  Passed initially: ${report.passedInitially}`);
+  lines.push(`  Repaired:         ${report.repaired}`);
+  lines.push(`  Unresolved:       ${report.unresolved}`);
+  lines.push(`  Skipped:          ${report.skipped}`);
+  lines.push(`  Total:            ${report.totalChecks}`);
+  lines.push(`  Cycles run:       ${report.cyclesRun}/${report.maxCycles}\n`);
+
+  if (report.criticalUnresolved.length > 0) {
+    lines.push(`  ✗ Critical unresolved (${report.criticalUnresolved.length}):\n`);
+    for (const item of report.criticalUnresolved) {
+      lines.push(`    ✗ ${item.question.slice(0, 80)}`);
+      lines.push(`      Expected: ${item.expectedAnswer.slice(0, 100)}`);
+      lines.push(`      ${item.explanation}`);
+      lines.push('');
+    }
+  }
+
+  const repaired = report.items.filter((i) => i.repairStatus === RepairStatuses.REPAIRED);
+  if (repaired.length > 0) {
+    lines.push(`  ✓ Repaired (${repaired.length}):\n`);
+    for (const item of repaired) {
+      lines.push(`    ✓ ${item.question.slice(0, 80)}`);
+      lines.push(`      ${item.explanation}`);
+      lines.push('');
+    }
+  }
+
+  const unresolvedNonCritical = report.items.filter(
+    (i) => i.repairStatus === RepairStatuses.UNRESOLVED && i.criticality !== Criticalities.CRITICAL,
+  );
+  if (unresolvedNonCritical.length > 0) {
+    lines.push(`  ⚠ Unresolved non-critical (${unresolvedNonCritical.length}):\n`);
+    for (const item of unresolvedNonCritical.slice(0, 5)) {
+      lines.push(`    ⚠ ${item.question.slice(0, 80)}`);
+      lines.push(`      ${item.explanation}`);
+      lines.push('');
+    }
+    if (unresolvedNonCritical.length > 5) {
+      lines.push(`    ... and ${unresolvedNonCritical.length - 5} more.\n`);
+    }
   }
 
   return lines.join('\n');
 }
 
 export function registerVerifyCommand(program: Command): void {
-  const verify = program.command('verify').description('Transfer verification');
+  const verify = program.command('verify').description('Transfer verification and repair');
 
   // ── generate ────────────────────────────────────────────
 
-  verify
-    .command('generate')
+  verify.command('generate')
     .description('Generate verification checks from project state')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
@@ -85,36 +135,27 @@ export function registerVerifyCommand(program: Command): void {
         saveWorkingState(opts.root, projectId, state);
       }
 
-      const decisions = loadDecisions(opts.root, projectId);
-      const tasks = listTasks(opts.root, projectId);
-      const attempts = listAttempts(opts.root, projectId);
+      const checks = generateChecks({
+        state,
+        decisions: loadDecisions(opts.root, projectId),
+        tasks: listTasks(opts.root, projectId),
+        attempts: listAttempts(opts.root, projectId),
+      });
 
-      const checks = generateChecks({ state, decisions, tasks, attempts });
       const path = saveChecks(opts.root, projectId, checks);
 
-      console.log(`\n✓ Generated ${checks.length} verification checks\n`);
-
       const byCrit: Record<string, number> = {};
-      const byDim: Record<string, number> = {};
-      for (const c of checks) {
-        byCrit[c.criticality] = (byCrit[c.criticality] ?? 0) + 1;
-        byDim[c.dimension] = (byDim[c.dimension] ?? 0) + 1;
-      }
+      for (const c of checks) byCrit[c.criticality] = (byCrit[c.criticality] ?? 0) + 1;
 
+      console.log(`\n✓ Generated ${checks.length} verification checks\n`);
       console.log('  By criticality:');
       for (const [k, v] of Object.entries(byCrit)) console.log(`    ${k.padEnd(12)} ${v}`);
-
-      console.log('\n  By dimension:');
-      for (const [k, v] of Object.entries(byDim)) console.log(`    ${k.padEnd(26)} ${v}`);
-
-      console.log(`\n  Saved to: ${path}`);
-      console.log('  Next: continuum verify score --answers <file>\n');
+      console.log(`\n  Saved: ${path}\n`);
     });
 
   // ── show ────────────────────────────────────────────────
 
-  verify
-    .command('show')
+  verify.command('show')
     .description('Show pending verification checks')
     .option('--json', 'Output as JSON', false)
     .option('--root <path>', '', DEFAULT_ROOT)
@@ -122,18 +163,11 @@ export function registerVerifyCommand(program: Command): void {
       const projectId = requireProject(opts.root);
       const checks = loadPendingChecks(opts.root, projectId);
 
-      if (!checks) {
-        console.log('\n  No pending checks. Run "continuum verify generate" first.\n');
-        return;
-      }
+      if (!checks) { console.log('\n  No pending checks. Run "continuum verify generate" first.\n'); return; }
 
-      if (opts.json) {
-        console.log(JSON.stringify(checks, null, 2));
-        return;
-      }
+      if (opts.json) { console.log(JSON.stringify(checks, null, 2)); return; }
 
       console.log(`\n─── Verification Checks (${checks.length})\n`);
-
       for (let i = 0; i < checks.length; i++) {
         const c = checks[i];
         const crit = c.criticality === Criticalities.CRITICAL ? ' [CRITICAL]' : c.criticality === 'high' ? ' [HIGH]' : '';
@@ -146,96 +180,149 @@ export function registerVerifyCommand(program: Command): void {
 
   // ── score ───────────────────────────────────────────────
 
-  verify
-    .command('score')
-    .description('Score verification checks against provided answers')
-    .option('--answers <file>', 'JSON file with answers: { "checkId": "answer", ... }')
-    .option('--auto', 'Auto-score using expected answers as actuals (self-test)', false)
+  verify.command('score')
+    .description('Score verification checks')
+    .option('--answers <file>', 'JSON file: { "checkId": "answer", ... }')
+    .option('--auto', 'Self-test with expected answers', false)
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const checks = loadPendingChecks(opts.root, projectId);
-
-      if (!checks) {
-        console.log('\n  No pending checks. Run "continuum verify generate" first.\n');
-        return;
-      }
+      if (!checks) { console.log('\n  No pending checks.\n'); return; }
 
       const answers = new Map<string, string>();
-
       if (opts.auto) {
-        // Self-test: use expected answers
-        for (const c of checks) {
-          answers.set(c.id, c.expectedAnswer);
-        }
+        for (const c of checks) answers.set(c.id, c.expectedAnswer);
       } else if (opts.answers) {
         const { existsSync, readFileSync } = require('fs');
-        if (!existsSync(opts.answers)) {
-          console.error(`\n✗ File not found: ${opts.answers}\n`);
-          process.exit(1);
-        }
-        try {
-          const parsed = JSON.parse(readFileSync(opts.answers, 'utf-8'));
-          for (const [k, v] of Object.entries(parsed)) {
-            answers.set(k, v as string);
-          }
-        } catch {
-          console.error('\n✗ Invalid JSON in answers file.\n');
-          process.exit(1);
-        }
+        if (!existsSync(opts.answers)) { console.error(`\n✗ Not found: ${opts.answers}\n`); process.exit(1); }
+        const parsed = JSON.parse(readFileSync(opts.answers, 'utf-8'));
+        for (const [k, v] of Object.entries(parsed)) answers.set(k, v as string);
       } else {
-        console.error('\n✗ Provide --answers <file> or use --auto for self-test.\n');
-        process.exit(1);
+        console.error('\n✗ Provide --answers <file> or --auto.\n'); process.exit(1);
       }
 
       scoreChecks(checks, answers);
       const report = buildReport(projectId, checks);
       const path = saveReport(opts.root, projectId, report);
 
-      console.log(formatReport(report));
+      console.log(formatVerificationReport(report));
       console.log(`  Report saved: ${path}\n`);
     });
 
-  // ── report ──────────────────────────────────────────────
+  // ── repair (ST1 + ST2 + ST3) ────────────────────────────
 
-  verify
-    .command('report')
-    .description('Show the latest verification report')
-    .option('--json', 'Output as JSON', false)
+  verify.command('repair')
+    .description('Generate repair evidence for failed checks and re-score')
+    .option('--answers <file>', 'JSON file with repaired answers')
+    .option('--auto', 'Auto-repair using expected answers (self-test)', false)
+    .option('--show-evidence', 'Show the repair evidence package', false)
+    .option('--max-cycles <n>', 'Max repair cycles', parseInt, 3)
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const report = loadLatestReport(opts.root, projectId);
 
       if (!report) {
-        console.log('\n  No verification reports. Run "continuum verify generate" then "continuum verify score --auto".\n');
+        console.error('\n✗ No verification report found. Run "continuum verify generate" and "continuum verify score" first.\n');
+        process.exit(1);
+      }
+
+      // ST1: Identify failures
+      const failures = identifyFailures(report);
+
+      if (failures.length === 0) {
+        console.log('\n✓ No repairs needed — all checks passed.\n');
         return;
       }
 
-      if (opts.json) {
-        console.log(JSON.stringify(report, null, 2));
+      console.log(`\n  Found ${failures.length} failed/incomplete check(s).`);
+
+      const criticalFailures = identifyCriticalFailures(report);
+      if (criticalFailures.length > 0) {
+        console.log(`  ${criticalFailures.length} are CRITICAL.\n`);
+      }
+
+      // ST2: Build repair evidence package
+      if (opts.showEvidence) {
+        const repairPackage = buildRepairPackage(opts.root, projectId, report);
+        console.log(repairPackage);
         return;
       }
 
-      console.log(formatReport(report));
+      // ST3: Re-score with repaired answers
+      const repairedAnswers = new Map<string, string>();
+
+      if (opts.auto) {
+        for (const check of failures) {
+          repairedAnswers.set(check.id, check.expectedAnswer);
+        }
+      } else if (opts.answers) {
+        const { existsSync, readFileSync } = require('fs');
+        if (!existsSync(opts.answers)) { console.error(`\n✗ Not found: ${opts.answers}\n`); process.exit(1); }
+        const parsed = JSON.parse(readFileSync(opts.answers, 'utf-8'));
+        for (const [k, v] of Object.entries(parsed)) repairedAnswers.set(k, v as string);
+      } else {
+        // No answers — just show the evidence package
+        const repairPackage = buildRepairPackage(opts.root, projectId, report);
+        console.log(repairPackage);
+        return;
+      }
+
+      const repairReport = runRepairCycle({
+        workspaceRoot: opts.root,
+        projectId,
+        report,
+        repairedAnswers,
+        maxCycles: opts.maxCycles,
+      });
+
+      console.log(formatRepairReport(repairReport));
+
+      // Save the updated report
+      const updatedChecks = report.checks.map((check) => {
+        const item = repairReport.items.find((i) => i.checkId === check.id);
+        if (item && item.repairStatus === RepairStatuses.REPAIRED && item.repairedScore !== null) {
+          return {
+            ...check,
+            status: CheckStatuses.PASSED,
+            actualAnswer: repairedAnswers.get(check.id) ?? check.actualAnswer,
+            score: item.repairedScore,
+            explanation: item.explanation,
+          };
+        }
+        return check;
+      });
+
+      const updatedReport = buildReport(projectId, updatedChecks);
+      const path = saveReport(opts.root, projectId, updatedReport);
+      console.log(`  Updated report saved: ${path}\n`);
+    });
+
+  // ── report ──────────────────────────────────────────────
+
+  verify.command('report')
+    .description('Show the latest verification report')
+    .option('--json', 'Output as JSON', false)
+    .option('--root <path>', '', DEFAULT_ROOT)
+    .action((opts) => {
+      const projectId = requireProject(opts.root);
+      const report = loadLatestReport(opts.root, projectId);
+      if (!report) { console.log('\n  No reports. Run "continuum verify generate" then "verify score".\n'); return; }
+      if (opts.json) { console.log(JSON.stringify(report, null, 2)); return; }
+      console.log(formatVerificationReport(report));
     });
 
   // ── history ─────────────────────────────────────────────
 
-  verify
-    .command('history')
+  verify.command('history')
     .description('List verification reports')
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const files = listReports(opts.root, projectId);
-
-      if (files.length === 0) {
-        console.log('\n  No verification reports.\n');
-        return;
-      }
-
-      console.log(`\n  Verification Reports (${files.length}):\n`);
+      if (files.length === 0) { console.log('\n  No reports.\n'); return; }
+      console.log(`\n  Reports (${files.length}):\n`);
       for (const f of files) console.log(`    ${f}`);
       console.log('');
     });

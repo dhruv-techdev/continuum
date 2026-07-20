@@ -46,9 +46,8 @@ export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, Capsule
 export { ContextLayers, ALL_LAYERS, estimateTokens, trimToTokenBudget, buildContextPackage, buildSingleLayer, MODEL_PRESETS, getModelPreset, getUsableBudget, listPresetIds, scoreStatement, scoreDecision, scoreTask, scoreAttempt, rankItems, selectByBudget, deduplicateItems, formatDeduplicatedItem } from './context/index';
 export type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions, ModelPreset, ScoredItem, DeduplicatedItem } from './context/index';
 
-// Verification
-export { generateCheckId, CheckDimensions, Criticalities, CheckStatuses, generateChecks, scoreCheck, scoreChecks, buildReport, saveReport, loadLatestReport, listReports, saveChecks, loadPendingChecks } from './verification/index';
-export type { CheckDimension, Criticality, CheckStatus, VerificationCheck, DimensionScore, VerificationReport, GenerateChecksInput } from './verification/index';
+export { generateCheckId, CheckDimensions, Criticalities, CheckStatuses, generateChecks, scoreCheck, scoreChecks, buildReport, saveReport, loadLatestReport, listReports, saveChecks, loadPendingChecks, RepairStatuses, identifyFailures, identifyCriticalFailures, retrieveEvidence, buildRepairContext, runRepairCycle, buildRepairPackage } from './verification/index';
+export type { CheckDimension, Criticality, CheckStatus, VerificationCheck, DimensionScore, VerificationReport, GenerateChecksInput, RepairStatus, RepairItem, RepairEvidence, RepairReport, RepairCycleInput } from './verification/index';
 
 export { detectFormat, parseTranscript, parseJSON, parseMarkdown, normalizeToEvents, writeEventsToLedger, importTranscript, WarningTypes } from './import/index';
 export type { ParsedMessage, ParseResult, TranscriptFormat, ImportWarning, ImportResult, ImportStats, WarningType, NormalizeInput, NormalizeOutput } from './import/index';
