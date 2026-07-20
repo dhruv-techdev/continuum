@@ -20,6 +20,7 @@ import { registerCapsuleCommand } from './commands/capsule';
 import { registerContextCommand } from './commands/context';
 import { registerMcpCommand } from './commands/mcp';
 import { registerVerifyCommand } from './commands/verify';
+import { registerCoverageCommand } from './commands/coverage';
 
 const program = new Command();
 
@@ -46,5 +47,6 @@ registerCapsuleCommand(program);
 registerContextCommand(program);
 registerMcpCommand(program);
 registerVerifyCommand(program);
+registerCoverageCommand(program);
 
 program.parse();
