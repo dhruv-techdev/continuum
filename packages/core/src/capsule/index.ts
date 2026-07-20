@@ -15,3 +15,6 @@ export { validateManifest, isCompatibleCapsuleVersion } from './validator';
 
 export { exportCapsule, verifyCapsuleIntegrity } from './exporter';
 export type { ExportOptions, ExportResult, VerifyCapsuleResult } from './exporter';
+
+export { importCapsule, ImportPhases } from './importer';
+export type { ImportPhase, ImportIssue, CapsuleImportResult, CapsuleImportOptions } from './importer';
