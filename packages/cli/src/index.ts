@@ -23,6 +23,7 @@ import { registerVerifyCommand } from './commands/verify';
 import { registerCoverageCommand } from './commands/coverage';
 import { registerScanCommand } from './commands/scan';
 import { registerShareCommand } from './commands/share';
+import { registerDashboardCommand } from './commands/dashboard';
 
 const program = new Command();
 
@@ -52,5 +53,6 @@ registerVerifyCommand(program);
 registerCoverageCommand(program);
 registerScanCommand(program);
 registerShareCommand(program);
+registerDashboardCommand(program);
 
 program.parse();
