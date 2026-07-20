@@ -332,3 +332,7 @@ export type {
   AdapterNormalizeInput,
   AdapterNormalizeOutput,
 } from './adapters/index';
+
+// Coverage
+export { FieldStatuses, FieldCriticalities, generateCoverageReport } from './adapters/index';
+export type { FieldStatus, FieldCriticality, CoverageField, CoverageReport, CoverageWarning } from './adapters/index';
