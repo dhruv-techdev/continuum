@@ -340,3 +340,7 @@ export type { FieldStatus, FieldCriticality, CoverageField, CoverageReport, Cove
 // Privacy
 export { SecretTypes, SECRET_PATTERNS, detectSecrets, RedactionActions, processEvents, getTransferableEvents, buildRedactionReport } from './privacy/index';
 export type { SecretType, SecretPattern, SecretDetection, RedactionAction, RedactedEvent, RedactionSummary, ProcessOptions, RedactionReport, RedactionReportEntry } from './privacy/index';
+
+// Scoped capsule
+export { exportScopedCapsule, encryptFile, decryptFile } from './capsule/index';
+export type { ScopeFilter, ScopedExportOptions, ScopedExportResult } from './capsule/index';

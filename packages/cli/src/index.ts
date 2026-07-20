@@ -22,6 +22,7 @@ import { registerMcpCommand } from './commands/mcp';
 import { registerVerifyCommand } from './commands/verify';
 import { registerCoverageCommand } from './commands/coverage';
 import { registerScanCommand } from './commands/scan';
+import { registerShareCommand } from './commands/share';
 
 const program = new Command();
 
@@ -50,5 +51,6 @@ registerMcpCommand(program);
 registerVerifyCommand(program);
 registerCoverageCommand(program);
 registerScanCommand(program);
+registerShareCommand(program);
 
 program.parse();

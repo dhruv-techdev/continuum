@@ -1,18 +1,10 @@
 export { CAPSULE_SCHEMA_VERSION } from './types';
 
 export type {
-  CapsuleManifest,
-  CapsuleProjectMeta,
-  CapsuleLedgerSection,
-  CapsuleStateSection,
-  CapsuleTrackingSection,
-  CapsuleTrackingFile,
-  CapsuleArtifactSection,
-  CapsuleEvaluationSection,
-  CapsuleEvaluationSummary,
-  CapsuleIntegritySection,
-  CapsuleFileHash,
-  CapsuleRedactionSummary,
+  CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection,
+  CapsuleStateSection, CapsuleTrackingSection, CapsuleTrackingFile,
+  CapsuleArtifactSection, CapsuleEvaluationSection, CapsuleEvaluationSummary,
+  CapsuleIntegritySection, CapsuleFileHash, CapsuleRedactionSummary,
   ManifestValidationError,
 } from './types';
 
@@ -25,9 +17,7 @@ export { exportCapsule, verifyCapsuleIntegrity } from './exporter';
 export type { ExportOptions, ExportResult, VerifyCapsuleResult } from './exporter';
 
 export { importCapsule, ImportPhases } from './importer';
-export type {
-  ImportPhase,
-  ImportIssue,
-  CapsuleImportResult,
-  CapsuleImportOptions,
-} from './importer';
+export type { ImportPhase, ImportIssue, CapsuleImportResult, CapsuleImportOptions } from './importer';
+
+export { exportScopedCapsule, encryptFile, decryptFile } from './scoped';
+export type { ScopeFilter, ScopedExportOptions, ScopedExportResult } from './scoped';
