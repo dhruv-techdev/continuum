@@ -336,3 +336,7 @@ export type {
 // Coverage
 export { FieldStatuses, FieldCriticalities, generateCoverageReport } from './adapters/index';
 export type { FieldStatus, FieldCriticality, CoverageField, CoverageReport, CoverageWarning } from './adapters/index';
+
+// Privacy
+export { SecretTypes, SECRET_PATTERNS, detectSecrets, RedactionActions, processEvents, getTransferableEvents, buildRedactionReport } from './privacy/index';
+export type { SecretType, SecretPattern, SecretDetection, RedactionAction, RedactedEvent, RedactionSummary, ProcessOptions, RedactionReport, RedactionReportEntry } from './privacy/index';
