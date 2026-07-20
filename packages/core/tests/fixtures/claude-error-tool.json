@@ -1,0 +1,41 @@
+[
+  {
+    "role": "user",
+    "content": "Fetch this URL: https://broken.example.com"
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_03GHI789",
+        "name": "web_fetch",
+        "input": { "url": "https://broken.example.com" }
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "tool_use"
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_03GHI789",
+        "content": "Error: Connection refused",
+        "is_error": true
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "The URL appears to be unreachable. The connection was refused."
+      }
+    ],
+    "model": "claude-sonnet-4-6",
+    "stop_reason": "end_turn"
+  }
+]

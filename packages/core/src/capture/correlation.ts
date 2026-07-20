@@ -12,7 +12,13 @@
  */
 
 import { randomUUID } from 'crypto';
-import type { ContinuumEvent, ToolCallEvent, ToolResultEvent, CommandEvent, CommandOutputEvent } from '../events/types';
+import type {
+  ContinuumEvent,
+  ToolCallEvent,
+  ToolResultEvent,
+  CommandEvent,
+  CommandOutputEvent,
+} from '../events/types';
 import { EventTypes } from '../events/types';
 
 // ─── ID generation ──────────────────────────────────────────
@@ -109,13 +115,8 @@ export function correlateEvents(events: ContinuumEvent[]): CorrelationReport {
   }
 
   // Collect unmatched
+  // (unmatched tool calls are already represented in toolPairs with result: null)
   const unmatchedToolCalls: ToolCallEvent[] = [];
-  for (const [callId, call] of toolCalls) {
-    if (!matchedToolResultIds.has(callId)) {
-      // Call exists but no result paired
-      // Already in toolPairs with result: null — only truly unmatched
-    }
-  }
 
   const unmatchedToolResults: ToolResultEvent[] = [];
   for (const [callId, result] of toolResults) {
@@ -164,7 +165,10 @@ export function findToolResult(events: ContinuumEvent[], callId: string): ToolRe
   return null;
 }
 
-export function findCommandOutput(events: ContinuumEvent[], commandEventId: string): CommandOutputEvent | null {
+export function findCommandOutput(
+  events: ContinuumEvent[],
+  commandEventId: string,
+): CommandOutputEvent | null {
   for (const event of events) {
     if (event.type === EventTypes.COMMAND_OUTPUT) {
       const co = event as CommandOutputEvent;

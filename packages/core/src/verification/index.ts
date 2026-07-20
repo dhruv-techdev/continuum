@@ -1,9 +1,4 @@
-export {
-  generateCheckId,
-  CheckDimensions,
-  Criticalities,
-  CheckStatuses,
-} from './types';
+export { generateCheckId, CheckDimensions, Criticalities, CheckStatuses } from './types';
 
 export type {
   CheckDimension,

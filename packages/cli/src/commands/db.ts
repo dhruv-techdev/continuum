@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { existsSync } from 'fs';
+import { existsSync, statSync, unlinkSync } from 'fs';
 import {
   DEFAULT_ROOT,
   openDB,
@@ -17,14 +17,11 @@ function formatBytes(bytes: number): string {
 }
 
 export function registerDbCommand(program: Command): void {
-  const db = program
-    .command('db')
-    .description('Manage the local metadata database');
+  const db = program.command('db').description('Manage the local metadata database');
 
   // ── db sync ─────────────────────────────────────────────
 
-  db
-    .command('sync')
+  db.command('sync')
     .description('Synchronize filesystem data into the SQLite index')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
@@ -52,8 +49,7 @@ export function registerDbCommand(program: Command): void {
 
   // ── db status ───────────────────────────────────────────
 
-  db
-    .command('status')
+  db.command('status')
     .description('Show database status and statistics')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
@@ -70,7 +66,6 @@ export function registerDbCommand(program: Command): void {
       }
 
       try {
-        const { statSync } = require('fs');
         const stat = statSync(path);
         console.log(`  Size:     ${formatBytes(stat.size)}`);
       } catch {
@@ -80,16 +75,18 @@ export function registerDbCommand(program: Command): void {
       const mdb = openDB(opts.root);
 
       // Count tables
-      const tables = mdb.db.prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-      ).all() as Array<{ name: string }>;
+      const tables = mdb.db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+        .all() as Array<{ name: string }>;
       console.log(`  Tables:   ${tables.length}`);
 
       // Count rows per table
       console.log('\n  Row counts:');
       for (const table of tables) {
         try {
-          const row = mdb.db.prepare(`SELECT COUNT(*) as count FROM "${table.name}"`).get() as { count: number };
+          const row = mdb.db.prepare(`SELECT COUNT(*) as count FROM "${table.name}"`).get() as {
+            count: number;
+          };
           console.log(`    ${table.name.padEnd(20)} ${row.count}`);
         } catch {
           console.log(`    ${table.name.padEnd(20)} (error)`);
@@ -109,15 +106,13 @@ export function registerDbCommand(program: Command): void {
 
   // ── db reset ────────────────────────────────────────────
 
-  db
-    .command('reset')
+  db.command('reset')
     .description('Delete and rebuild the database from filesystem data')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
       const path = dbPath(opts.root);
 
       if (existsSync(path)) {
-        const { unlinkSync } = require('fs');
         unlinkSync(path);
         console.log('\n  Deleted existing database.');
       }

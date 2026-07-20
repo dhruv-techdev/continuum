@@ -99,10 +99,22 @@ export function indexEvent(db: MetadataDB, event: ContinuumEvent): void {
   if (content.length === 0) return;
   if (isIndexed(db, event.id)) return;
 
-  db.db.prepare(`
+  db.db
+    .prepare(
+      `
     INSERT INTO events_fts (event_id, project_id, session_id, type, timestamp, source, content)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(event.id, event.projectId, event.sessionId, event.type, event.timestamp, event.source, content);
+  `,
+    )
+    .run(
+      event.id,
+      event.projectId,
+      event.sessionId,
+      event.type,
+      event.timestamp,
+      event.source,
+      content,
+    );
 }
 
 export function indexEvents(db: MetadataDB, events: ContinuumEvent[]): void {
@@ -118,7 +130,15 @@ export function indexEvents(db: MetadataDB, events: ContinuumEvent[]): void {
       const content = extractContent(event);
       if (content.length === 0) continue;
       if (isIndexed(db, event.id)) continue;
-      stmt.run(event.id, event.projectId, event.sessionId, event.type, event.timestamp, event.source, content);
+      stmt.run(
+        event.id,
+        event.projectId,
+        event.sessionId,
+        event.type,
+        event.timestamp,
+        event.source,
+        content,
+      );
     }
   });
 }
@@ -262,9 +282,9 @@ export function search(db: MetadataDB, options: SearchOptions): SearchResult[] {
 export function countIndexed(db: MetadataDB, projectId: string): number {
   ensureFTS(db);
 
-  const row = db.db.prepare(
-    'SELECT COUNT(*) as count FROM events_fts WHERE project_id = ?'
-  ).get(projectId) as { count: number };
+  const row = db.db
+    .prepare('SELECT COUNT(*) as count FROM events_fts WHERE project_id = ?')
+    .get(projectId) as { count: number };
 
   return row.count;
 }

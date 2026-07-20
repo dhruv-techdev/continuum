@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { startServer } from './server';
+
 export { VERSION, PRODUCT_NAME } from '@continuum/core';
 export { createServer, startServer } from './server';
 export type { ServerOptions } from './server';
@@ -12,7 +14,6 @@ if (require.main === module) {
     ? process.argv[process.argv.indexOf('--root') + 1]
     : undefined;
 
-  const { startServer } = require('./server');
   startServer({ root }).catch((err: Error) => {
     console.error('MCP server error:', err.message);
     process.exit(1);

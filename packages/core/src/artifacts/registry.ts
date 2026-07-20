@@ -6,28 +6,12 @@
  * copies file content into the project's artifacts/ store (ST3).
  */
 
-import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  statSync,
-  copyFileSync,
-} from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, copyFileSync } from 'fs';
 import { join, basename, extname } from 'path';
 import { createHash } from 'crypto';
 import { detectMimeType } from './mime';
-import {
-  generateArtifactId,
-  StorageModes,
-  ArtifactStatuses,
-} from './types';
-import type {
-  ArtifactEntry,
-  RegisterArtifactInput,
-  RegisterResult,
-  StorageMode,
-} from './types';
+import { generateArtifactId, StorageModes, ArtifactStatuses } from './types';
+import type { ArtifactEntry, RegisterArtifactInput, RegisterResult, StorageMode } from './types';
 
 const REGISTRY_FILENAME = 'artifacts.json';
 const ARTIFACTS_DIR = 'artifacts';
@@ -83,9 +67,11 @@ export function findArtifactByUri(
 ): ArtifactEntry | null {
   const entries = loadRegistry(workspaceRoot, projectId);
   // Find the latest active version for this URI
-  return entries
-    .filter((e) => e.uri === uri && e.status === ArtifactStatuses.ACTIVE)
-    .sort((a, b) => b.version - a.version)[0] ?? null;
+  return (
+    entries
+      .filter((e) => e.uri === uri && e.status === ArtifactStatuses.ACTIVE)
+      .sort((a, b) => b.version - a.version)[0] ?? null
+  );
 }
 
 export function findArtifactById(

@@ -51,9 +51,7 @@ export function buildManifest(input: BuildManifestInput): CapsuleManifest {
 
   // ── Project metadata (ST1) ──────────────────────────────
 
-  const projectManifest = JSON.parse(
-    readFileSync(join(projectDir, 'project.json'), 'utf-8'),
-  );
+  const projectManifest = JSON.parse(readFileSync(join(projectDir, 'project.json'), 'utf-8'));
 
   const sessionsDir = join(projectDir, 'sessions');
   const sessionIds: string[] = [];
@@ -133,7 +131,17 @@ export function buildManifest(input: BuildManifestInput): CapsuleManifest {
     const categoryCounts: Record<string, number> = {};
     let activeCount = 0;
 
-    for (const cat of ['objectives', 'requirements', 'constraints', 'decisions', 'nextActions', 'completed', 'failures', 'assumptions', 'openQuestions']) {
+    for (const cat of [
+      'objectives',
+      'requirements',
+      'constraints',
+      'decisions',
+      'nextActions',
+      'completed',
+      'failures',
+      'assumptions',
+      'openQuestions',
+    ]) {
       const arr = parsed[cat] ?? [];
       const active = arr.filter((s: { status: string }) => s.status === 'active');
       categoryCounts[cat] = active.length;
@@ -187,7 +195,9 @@ export function buildManifest(input: BuildManifestInput): CapsuleManifest {
     const raw = readFileSync(registryPath, 'utf-8');
     const arr = JSON.parse(raw);
     const total = Array.isArray(arr) ? arr.length : 0;
-    const stored = Array.isArray(arr) ? arr.filter((a: { storageMode: string }) => a.storageMode === 'content').length : 0;
+    const stored = Array.isArray(arr)
+      ? arr.filter((a: { storageMode: string }) => a.storageMode === 'content').length
+      : 0;
 
     artifacts = {
       registryPath: 'artifacts.json',
@@ -221,7 +231,11 @@ export function buildManifest(input: BuildManifestInput): CapsuleManifest {
 
   // Include artifact registry
   if (artifacts) {
-    integrityFiles.push({ path: 'artifacts.json', hash: artifacts.registryHash, size: fileSize(registryPath) });
+    integrityFiles.push({
+      path: 'artifacts.json',
+      hash: artifacts.registryHash,
+      size: fileSize(registryPath),
+    });
   }
 
   const integrity: CapsuleIntegritySection = {

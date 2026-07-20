@@ -11,13 +11,12 @@
  * append-only ledger for dedup and ordering.
  */
 
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { openLedger } from '../ledger/event-ledger';
 import { validateEvent } from '../events/validation';
 import { createEvent } from '../events/factory';
-import { EventTypes, MessageRoles } from '../events/types';
-import type { ContinuumEvent, EventType, MessageRole } from '../events/types';
-import type { AppendBatchResult } from '../ledger/types';
+import type { ContinuumEvent, EventType } from '../events/types';
 
 // ─── Capture result (ST3) ───────────────────────────────────
 
@@ -38,7 +37,10 @@ export interface CaptureError {
 
 // ─── Parse raw input into events ────────────────────────────
 
-function parseJsonlLines(raw: string): { events: Record<string, unknown>[]; errors: CaptureError[] } {
+function parseJsonlLines(raw: string): {
+  events: Record<string, unknown>[];
+  errors: CaptureError[];
+} {
   const lines = raw.split('\n');
   const events: Record<string, unknown>[] = [];
   const errors: CaptureError[] = [];
@@ -62,7 +64,11 @@ function parseJsonlLines(raw: string): { events: Record<string, unknown>[]; erro
         errors.push({ line: i + 1, eventId: null, message: `Line ${i + 1}: not an object.` });
       }
     } catch (err) {
-      errors.push({ line: i + 1, eventId: null, message: `Line ${i + 1}: ${(err as Error).message}` });
+      errors.push({
+        line: i + 1,
+        eventId: null,
+        message: `Line ${i + 1}: ${(err as Error).message}`,
+      });
     }
   }
 
@@ -138,8 +144,11 @@ export function ingestFromFile(
 ): CaptureResult {
   if (!existsSync(filePath)) {
     return {
-      appended: 0, duplicatesSkipped: 0, validationErrors: 0,
-      parseErrors: 1, totalProcessed: 0,
+      appended: 0,
+      duplicatesSkipped: 0,
+      validationErrors: 0,
+      parseErrors: 1,
+      totalProcessed: 0,
       errors: [{ line: null, eventId: null, message: `File not found: ${filePath}` }],
     };
   }
@@ -161,8 +170,12 @@ export interface QuickCaptureInput {
 
 export function quickCapture(input: QuickCaptureInput): CaptureResult {
   const result: CaptureResult = {
-    appended: 0, duplicatesSkipped: 0, validationErrors: 0,
-    parseErrors: 0, totalProcessed: 1, errors: [],
+    appended: 0,
+    duplicatesSkipped: 0,
+    validationErrors: 0,
+    parseErrors: 0,
+    totalProcessed: 1,
+    errors: [],
   };
 
   const ledger = openLedger(input.workspaceRoot, input.projectId, input.sessionId);
@@ -204,9 +217,13 @@ export function updateSessionAfterCapture(
 ): void {
   if (newEvents === 0) return;
 
-  const { join } = require('path');
   const sessionManifestPath = join(
-    workspaceRoot, 'projects', projectId, 'sessions', sessionId, 'session.json',
+    workspaceRoot,
+    'projects',
+    projectId,
+    'sessions',
+    sessionId,
+    'session.json',
   );
 
   if (!existsSync(sessionManifestPath)) return;
@@ -215,7 +232,6 @@ export function updateSessionAfterCapture(
     const raw = readFileSync(sessionManifestPath, 'utf-8');
     const session = JSON.parse(raw);
     session.eventCount = (session.eventCount ?? 0) + newEvents;
-    const { writeFileSync } = require('fs');
     writeFileSync(sessionManifestPath, JSON.stringify(session, null, 2) + '\n', 'utf-8');
   } catch {
     // Non-fatal

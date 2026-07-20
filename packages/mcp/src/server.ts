@@ -8,13 +8,9 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { VERSION, PRODUCT_NAME, DEFAULT_ROOT } from '@continuum/core';
 import { ALL_TOOLS } from './tools';
-import type { ToolDef } from './tools';
 
 export interface ServerOptions {
   root?: string;

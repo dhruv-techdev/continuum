@@ -67,7 +67,11 @@ export function loadAttempts(workspaceRoot: string, projectId: string): Attempt[
 }
 
 function saveAttempts(workspaceRoot: string, projectId: string, attempts: Attempt[]): void {
-  writeFileSync(filePath(workspaceRoot, projectId), JSON.stringify(attempts, null, 2) + '\n', 'utf-8');
+  writeFileSync(
+    filePath(workspaceRoot, projectId),
+    JSON.stringify(attempts, null, 2) + '\n',
+    'utf-8',
+  );
 }
 
 // ─── Operations ─────────────────────────────────────────────
@@ -109,6 +113,10 @@ export function getFailedAttempts(workspaceRoot: string, projectId: string): Att
   );
 }
 
-export function getAttempt(workspaceRoot: string, projectId: string, attemptId: string): Attempt | null {
+export function getAttempt(
+  workspaceRoot: string,
+  projectId: string,
+  attemptId: string,
+): Attempt | null {
   return loadAttempts(workspaceRoot, projectId).find((a) => a.id === attemptId) ?? null;
 }

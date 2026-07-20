@@ -1,20 +1,10 @@
 export { ContextLayers, ALL_LAYERS } from './types';
 
-export type {
-  ContextLayer,
-  LayerContent,
-  ContextPackage,
-  ContextBuildOptions,
-} from './types';
+export type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions } from './types';
 
 export { estimateTokens, trimToTokenBudget } from './tokens';
 
-export {
-  MODEL_PRESETS,
-  getModelPreset,
-  getUsableBudget,
-  listPresetIds,
-} from './models';
+export { MODEL_PRESETS, getModelPreset, getUsableBudget, listPresetIds } from './models';
 
 export type { ModelPreset } from './models';
 

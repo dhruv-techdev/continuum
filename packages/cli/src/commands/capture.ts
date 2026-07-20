@@ -53,7 +53,9 @@ function resolveContext(root: string, opts: { project?: string; session?: string
       process.exit(1);
     }
     if (session.status === 'closed') {
-      console.error(`\n✗ Session "${sessionId}" is closed. Start a new one with "continuum session start".\n`);
+      console.error(
+        `\n✗ Session "${sessionId}" is closed. Start a new one with "continuum session start".\n`,
+      );
       process.exit(1);
     }
   }
@@ -107,9 +109,7 @@ function formatResult(result: CaptureResult, verbose: boolean): string {
 // ─── Register ───────────────────────────────────────────────
 
 export function registerCaptureCommand(program: Command): void {
-  const capture = program
-    .command('capture')
-    .description('Capture events into the active session');
+  const capture = program.command('capture').description('Capture events into the active session');
 
   // ── capture message ─────────────────────────────────────
 
@@ -184,7 +184,9 @@ export function registerCaptureCommand(program: Command): void {
         console.log(`\n✓ Tool call captured (callId: ${callId})\n`);
         console.log(`  Tool:    ${opts.name}`);
         console.log(`  Call ID: ${callId}`);
-        console.log(`\n  Use this callId with "capture tool-result --call-id ${callId}" to record the result.\n`);
+        console.log(
+          `\n  Use this callId with "capture tool-result --call-id ${callId}" to record the result.\n`,
+        );
       } else {
         console.log(formatResult(result, false));
       }
@@ -226,7 +228,9 @@ export function registerCaptureCommand(program: Command): void {
       updateSessionAfterCapture(opts.root, projectId, sessionId, result.appended);
 
       if (result.appended > 0) {
-        const link = opts.callId ? ` (linked to callId: ${opts.callId})` : ' (no callId — unlinked)';
+        const link = opts.callId
+          ? ` (linked to callId: ${opts.callId})`
+          : ' (no callId — unlinked)';
         console.log(`\n✓ Tool result captured${link}\n`);
         console.log(`  Tool:     ${opts.name}`);
         console.log(`  Error:    ${opts.isError}`);
@@ -279,7 +283,11 @@ export function registerCaptureCommand(program: Command): void {
       }
 
       // If output was provided, capture a correlated command_output event (ST3)
-      if (cmdResult.appended > 0 && commandEventId && (opts.stdout || opts.stderr || opts.exitCode !== undefined)) {
+      if (
+        cmdResult.appended > 0 &&
+        commandEventId &&
+        (opts.stdout || opts.stderr || opts.exitCode !== undefined)
+      ) {
         const outputResult = quickCapture({
           workspaceRoot: opts.root,
           projectId,
@@ -300,7 +308,9 @@ export function registerCaptureCommand(program: Command): void {
 
       if (totalAppended > 0) {
         const hasOutput = opts.stdout || opts.stderr || opts.exitCode !== undefined;
-        console.log(`\n✓ Captured ${totalAppended} event(s) (command${hasOutput ? ' + output' : ''})\n`);
+        console.log(
+          `\n✓ Captured ${totalAppended} event(s) (command${hasOutput ? ' + output' : ''})\n`,
+        );
         console.log(`  Command:  ${opts.cmd}`);
         if (commandEventId) console.log(`  Event ID: ${commandEventId}`);
         if (opts.exitCode !== undefined) console.log(`  Exit:     ${opts.exitCode}`);

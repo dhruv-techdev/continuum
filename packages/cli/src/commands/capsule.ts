@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 import {
@@ -18,7 +18,10 @@ import type { CapsuleManifest, ImportIssue } from '@continuum/core';
 
 function requireProject(root: string): string {
   const s = getState(root);
-  if (!s.activeProjectId) { console.error('\n✗ No active project.\n'); process.exit(1); }
+  if (!s.activeProjectId) {
+    console.error('\n✗ No active project.\n');
+    process.exit(1);
+  }
   return s.activeProjectId;
 }
 
@@ -108,7 +111,9 @@ export function registerCapsuleCommand(program: Command): void {
       const allPhases = Object.values(ImportPhases);
       for (const phase of allPhases) {
         const passed = result.phasesCompleted.includes(phase);
-        const phaseErrors = result.issues.filter((i) => i.phase === phase && i.severity === 'error');
+        const phaseErrors = result.issues.filter(
+          (i) => i.phase === phase && i.severity === 'error',
+        );
         const icon = passed ? '✓' : phaseErrors.length > 0 ? '✗' : '—';
         console.log(`    ${icon} ${phaseLabels[phase] ?? phase}`);
       }
@@ -154,19 +159,31 @@ export function registerCapsuleCommand(program: Command): void {
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const project = getProject(opts.root, projectId);
-      if (!project) { console.error('\n✗ Project not found.\n'); process.exit(1); }
+      if (!project) {
+        console.error('\n✗ Project not found.\n');
+        process.exit(1);
+      }
 
-      const sessionFilter = opts.sessions ? opts.sessions.split(',').map((s: string) => s.trim()) : undefined;
+      const sessionFilter = opts.sessions
+        ? opts.sessions.split(',').map((s: string) => s.trim())
+        : undefined;
 
       console.log(`\n  Exporting capsule for "${project.title}"...\n`);
 
       const result = exportCapsule({
-        workspaceRoot: opts.root, projectId, outputDir: opts.output,
-        includeArtifactContent: opts.includeArtifacts, sessionFilter,
-        notes: opts.notes, expiresAt: opts.expires,
+        workspaceRoot: opts.root,
+        projectId,
+        outputDir: opts.output,
+        includeArtifactContent: opts.includeArtifacts,
+        sessionFilter,
+        notes: opts.notes,
+        expiresAt: opts.expires,
       });
 
-      if (result.error) { console.error(`\n✗ ${result.error}\n`); process.exit(1); }
+      if (result.error) {
+        console.error(`\n✗ ${result.error}\n`);
+        process.exit(1);
+      }
 
       const m = result.manifest;
       console.log(`✓ Capsule exported\n`);
@@ -177,9 +194,21 @@ export function registerCapsuleCommand(program: Command): void {
       if (opts.notes) console.log(`  Notes:      ${opts.notes}`);
       console.log(`\n  Contents:`);
       console.log(formatSection('Ledger', true, `${m.ledger.eventCount} events`));
-      console.log(formatSection('State', !!m.state, m.state ? `${m.state.activeStatements} statements` : undefined));
+      console.log(
+        formatSection(
+          'State',
+          !!m.state,
+          m.state ? `${m.state.activeStatements} statements` : undefined,
+        ),
+      );
       console.log(formatSection('Tracking', !!m.tracking));
-      console.log(formatSection('Artifacts', !!m.artifacts, m.artifacts ? `${m.artifacts.totalArtifacts} registered` : undefined));
+      console.log(
+        formatSection(
+          'Artifacts',
+          !!m.artifacts,
+          m.artifacts ? `${m.artifacts.totalArtifacts} registered` : undefined,
+        ),
+      );
       console.log(`\n  To verify: continuum capsule verify ${result.capsulePath}\n`);
     });
 
@@ -191,10 +220,16 @@ export function registerCapsuleCommand(program: Command): void {
     .option('--root <path>', '', DEFAULT_ROOT)
     .action((capsulePath: string) => {
       const resolved = resolve(capsulePath);
-      if (!existsSync(resolved)) { console.error(`\n✗ Not found: ${resolved}\n`); process.exit(1); }
+      if (!existsSync(resolved)) {
+        console.error(`\n✗ Not found: ${resolved}\n`);
+        process.exit(1);
+      }
 
       const result = verifyCapsuleIntegrity(resolved);
-      if (result.error) { console.error(`\n✗ ${result.error}\n`); process.exit(1); }
+      if (result.error) {
+        console.error(`\n✗ ${result.error}\n`);
+        process.exit(1);
+      }
 
       console.log(`\n  Files checked: ${result.filesChecked}`);
       if (result.missing.length > 0) {
@@ -203,10 +238,19 @@ export function registerCapsuleCommand(program: Command): void {
       }
       if (result.mismatches.length > 0) {
         console.log(`\n  Mismatches (${result.mismatches.length}):`);
-        for (const m of result.mismatches) console.log(`    ✗ ${m.path}: expected ${m.expected.slice(0, 16)}…, got ${m.actual.slice(0, 16)}…`);
+        for (const m of result.mismatches)
+          console.log(
+            `    ✗ ${m.path}: expected ${m.expected.slice(0, 16)}…, got ${m.actual.slice(0, 16)}…`,
+          );
       }
-      if (result.valid) console.log(`\n  ✓ All ${result.filesChecked} file(s) verified. Capsule integrity verified.\n`);
-      else { console.log(`\n  ✗ Integrity check FAILED.\n`); process.exit(1); }
+      if (result.valid)
+        console.log(
+          `\n  ✓ All ${result.filesChecked} file(s) verified. Capsule integrity verified.\n`,
+        );
+      else {
+        console.log(`\n  ✗ Integrity check FAILED.\n`);
+        process.exit(1);
+      }
     });
 
   // ── manifest ────────────────────────────────────────────
@@ -221,16 +265,24 @@ export function registerCapsuleCommand(program: Command): void {
     .action((opts) => {
       const projectId = requireProject(opts.root);
       const project = getProject(opts.root, projectId);
-      if (!project) { console.error('\n✗ Project not found.\n'); process.exit(1); }
+      if (!project) {
+        console.error('\n✗ Project not found.\n');
+        process.exit(1);
+      }
 
       const manifest = buildManifest({ workspaceRoot: opts.root, projectId, notes: opts.notes });
-      if (opts.json) { console.log(JSON.stringify(manifest, null, 2)); return; }
+      if (opts.json) {
+        console.log(JSON.stringify(manifest, null, 2));
+        return;
+      }
       if (opts.save) {
         const p = join(opts.root, 'projects', projectId, 'manifest.json');
         writeFileSync(p, JSON.stringify(manifest, null, 2) + '\n', 'utf-8');
         console.log(`\n✓ Saved to ${p}`);
       }
-      console.log(`\n─── Manifest: ${project.title}\n  Capsule: ${manifest.capsuleId}\n  Events: ${manifest.ledger.eventCount}\n  Integrity: ${manifest.integrity.files.length} files\n`);
+      console.log(
+        `\n─── Manifest: ${project.title}\n  Capsule: ${manifest.capsuleId}\n  Events: ${manifest.ledger.eventCount}\n  Integrity: ${manifest.integrity.files.length} files\n`,
+      );
     });
 
   // ── validate ────────────────────────────────────────────
@@ -239,17 +291,28 @@ export function registerCapsuleCommand(program: Command): void {
     .command('validate <manifestPath>')
     .description('Validate a manifest file')
     .action((manifestPath: string) => {
-      if (!existsSync(manifestPath)) { console.error(`\n✗ Not found: ${manifestPath}\n`); process.exit(1); }
+      if (!existsSync(manifestPath)) {
+        console.error(`\n✗ Not found: ${manifestPath}\n`);
+        process.exit(1);
+      }
       let parsed: unknown;
-      try { parsed = JSON.parse(readFileSync(manifestPath, 'utf-8')); } catch { console.error('\n✗ Invalid JSON.\n'); process.exit(1); }
+      try {
+        parsed = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+      } catch {
+        console.error('\n✗ Invalid JSON.\n');
+        process.exit(1);
+      }
       const errors = validateManifest(parsed);
       if (errors.length === 0) {
         const m = parsed as CapsuleManifest;
-        console.log(`\n✓ Valid: ${m.capsuleId} — ${m.project?.title ?? '—'} (${m.ledger?.eventCount ?? 0} events)\n`);
+        console.log(
+          `\n✓ Valid: ${m.capsuleId} — ${m.project?.title ?? '—'} (${m.ledger?.eventCount ?? 0} events)\n`,
+        );
       } else {
         console.error(`\n✗ ${errors.length} error(s):\n`);
         for (const e of errors) console.error(`  ✗ ${e.field}: ${e.message}`);
-        console.error(''); process.exit(1);
+        console.error('');
+        process.exit(1);
       }
     });
 }

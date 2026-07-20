@@ -33,13 +33,17 @@ export function registerMcpCommand(program: Command): void {
         console.log(`  ${tool.name}`);
         console.log(`    ${tool.description}`);
 
-        const schema = tool.inputSchema as { properties?: Record<string, { type: string; description?: string }> };
+        const schema = tool.inputSchema as {
+          properties?: Record<string, { type: string; description?: string }>;
+        };
         if (schema.properties) {
           const params = Object.entries(schema.properties);
           if (params.length > 0) {
             console.log('    Parameters:');
             for (const [name, def] of params) {
-              console.log(`      ${name} (${def.type})${def.description ? ': ' + def.description : ''}`);
+              console.log(
+                `      ${name} (${def.type})${def.description ? ': ' + def.description : ''}`,
+              );
             }
           }
         }
@@ -54,7 +58,6 @@ export function registerMcpCommand(program: Command): void {
     .description('Print MCP server configuration for use in client settings')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
-      const mcpBin = resolve(__dirname, '../../node_modules/.bin/tsx');
       const serverPath = resolve(__dirname, '../../node_modules/@continuum/mcp/src/index.ts');
 
       const config = {
@@ -67,7 +70,9 @@ export function registerMcpCommand(program: Command): void {
 
       console.log('\n  Add this to your MCP client configuration:\n');
       console.log(JSON.stringify(config, null, 2));
-      console.log('\n  For Claude Desktop, add to ~/Library/Application Support/Claude/claude_desktop_config.json');
+      console.log(
+        '\n  For Claude Desktop, add to ~/Library/Application Support/Claude/claude_desktop_config.json',
+      );
       console.log('  under the "mcpServers" key.\n');
     });
 

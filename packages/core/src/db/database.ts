@@ -43,14 +43,14 @@ export class MetadataDB {
   private migrate(): void {
     this.db.exec(CREATE_TABLES);
 
-    const row = this.db.prepare(
-      "SELECT value FROM schema_meta WHERE key = 'schema_version'"
-    ).get() as { value: string } | undefined;
+    const row = this.db
+      .prepare("SELECT value FROM schema_meta WHERE key = 'schema_version'")
+      .get() as { value: string } | undefined;
 
     if (!row) {
-      this.db.prepare(
-        "INSERT INTO schema_meta (key, value) VALUES ('schema_version', ?)"
-      ).run(String(SCHEMA_VERSION));
+      this.db
+        .prepare("INSERT INTO schema_meta (key, value) VALUES ('schema_version', ?)")
+        .run(String(SCHEMA_VERSION));
     }
   }
 
