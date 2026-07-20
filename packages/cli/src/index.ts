@@ -18,6 +18,7 @@ import { registerEventCommand } from './commands/event';
 import { registerTrackCommand } from './commands/track';
 import { registerCapsuleCommand } from './commands/capsule';
 import { registerContextCommand } from './commands/context';
+import { registerMcpCommand } from './commands/mcp';
 
 const program = new Command();
 
@@ -42,5 +43,6 @@ registerEventCommand(program);
 registerTrackCommand(program);
 registerCapsuleCommand(program);
 registerContextCommand(program);
+registerMcpCommand(program);
 
 program.parse();
