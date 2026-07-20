@@ -43,9 +43,8 @@ export type { AttemptOutcome, Attempt, CreateAttemptInput } from './tracking/ind
 export { CAPSULE_SCHEMA_VERSION, buildManifest, validateManifest, isCompatibleCapsuleVersion, exportCapsule, verifyCapsuleIntegrity, importCapsule, ImportPhases } from './capsule/index';
 export type { CapsuleManifest, CapsuleProjectMeta, CapsuleLedgerSection, CapsuleStateSection, CapsuleTrackingSection, CapsuleTrackingFile, CapsuleArtifactSection, CapsuleEvaluationSection, CapsuleEvaluationSummary, CapsuleIntegritySection, CapsuleFileHash, CapsuleRedactionSummary, ManifestValidationError, BuildManifestInput, ExportOptions, ExportResult, VerifyCapsuleResult, ImportPhase, ImportIssue, CapsuleImportResult, CapsuleImportOptions } from './capsule/index';
 
-// Context
-export { ContextLayers, ALL_LAYERS, estimateTokens, trimToTokenBudget, buildContextPackage, buildSingleLayer } from './context/index';
-export type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions } from './context/index';
+export { ContextLayers, ALL_LAYERS, estimateTokens, trimToTokenBudget, buildContextPackage, buildSingleLayer, MODEL_PRESETS, getModelPreset, getUsableBudget, listPresetIds, scoreStatement, scoreDecision, scoreTask, scoreAttempt, rankItems, selectByBudget, deduplicateItems, formatDeduplicatedItem } from './context/index';
+export type { ContextLayer, LayerContent, ContextPackage, ContextBuildOptions, ModelPreset, ScoredItem, DeduplicatedItem } from './context/index';
 
 export { detectFormat, parseTranscript, parseJSON, parseMarkdown, normalizeToEvents, writeEventsToLedger, importTranscript, WarningTypes } from './import/index';
 export type { ParsedMessage, ParseResult, TranscriptFormat, ImportWarning, ImportResult, ImportStats, WarningType, NormalizeInput, NormalizeOutput } from './import/index';
