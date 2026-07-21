@@ -1,26 +1,38 @@
 {
   "name": "continuum",
   "version": "0.1.0",
-  "private": true,
   "description": "Verifiable state transfer for AI work",
+  "private": true,
   "scripts": {
     "build": "pnpm -r build",
+    "clean": "pnpm -r clean",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:core": "vitest run --project core",
+    "test:cli": "vitest run --project cli",
+    "test:mcp": "vitest run --project mcp",
+    "dev:cli": "tsx packages/cli/src/index.ts",
+    "dev:mcp": "tsx packages/mcp/src/index.ts",
+    "demo": "bash packages/cli/scripts/demo.sh",
+    "demo:quick": "bash packages/cli/scripts/quickstart.sh",
     "lint": "eslint packages/*/src",
-    "format": "prettier --write 'packages/*/src/**/*.ts'",
-    "format:check": "prettier --check 'packages/*/src/**/*.ts'",
-    "clean": "pnpm -r clean",
-    "dev:cli": "tsx packages/cli/src/index.ts"
+    "format": "prettier --write packages/*/src/**/*.ts",
+    "typecheck": "tsc --noEmit -p packages/core/tsconfig.json && tsc --noEmit -p packages/cli/tsconfig.json && tsc --noEmit -p packages/mcp/tsconfig.json",
+    "verify": "pnpm build && pnpm test && pnpm typecheck",
+    "release": "bash packages/cli/scripts/release.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^8.64.0",
-    "@typescript-eslint/parser": "^8.64.0",
-    "eslint": "^9.39.5",
-    "prettier": "^3.2.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.2.0"
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }

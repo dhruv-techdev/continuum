@@ -6,7 +6,6 @@ import {
   openLedger,
   generateCoverageReport,
   FieldStatuses,
-  FieldCriticalities,
 } from '@continuum/core';
 import type { CoverageReport, CoverageField } from '@continuum/core';
 

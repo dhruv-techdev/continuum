@@ -1,0 +1,27 @@
+[
+  { "role": "user", "content": "What is the capital of France?" },
+  { "role": "assistant", "content": "The capital of France is Paris.", "model": "gpt-4o" },
+  { "role": "user", "content": "Search for the current population." },
+  {
+    "role": "assistant",
+    "content": null,
+    "model": "gpt-4o",
+    "tool_calls": [
+      {
+        "id": "call_01ABC123",
+        "type": "function",
+        "function": { "name": "web_search", "arguments": "{\"query\":\"Paris population 2025\"}" }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "tool_call_id": "call_01ABC123",
+    "content": "Paris has a population of approximately 2.1 million in the city proper and 12.3 million in the metro area."
+  },
+  {
+    "role": "assistant",
+    "content": "Based on the search results, Paris has approximately 2.1 million people in the city proper and around 12.3 million in the metropolitan area.",
+    "model": "gpt-4o"
+  }
+]

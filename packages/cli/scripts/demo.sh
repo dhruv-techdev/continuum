@@ -5,7 +5,7 @@ set -euo pipefail
 # Continuum Cross-Tool Demonstration (US-031)
 #
 # Proves end-to-end context continuity:
-#   1. Import a realistic Claude dev session
+#   1. Import a realistic AI dev session (any provider — Claude, ChatGPT, etc.)
 #   2. Extract state, track decisions/tasks/failures
 #   3. Export a portable capsule
 #   4. Import into a fresh workspace
@@ -46,7 +46,7 @@ ok "Workspace initialized"
 $CLI project create -t "Taskflow API" -d "REST API for a task-management app — Go, Gin, PostgreSQL"
 ok "Project created"
 
-step "Phase 2: Import Claude dev session (ST1)"
+step "Phase 2: Import AI dev session (ST1)"
 $CLI import "$FIXTURE" --verbose
 ok "Session imported with tool calls"
 
@@ -153,7 +153,7 @@ echo -e "\n${BOLD}╔═══════════════════�
 echo -e "${BOLD}║   Demonstration Complete                              ║${NC}"
 echo -e "${BOLD}╠═══════════════════════════════════════════════════════╣${NC}"
 echo -e "${BOLD}║                                                       ║${NC}"
-echo -e "${BOLD}║   ✓ Imported a realistic Claude dev session           ║${NC}"
+echo -e "${BOLD}║   ✓ Imported a realistic AI dev session               ║${NC}"
 echo -e "${BOLD}║   ✓ Extracted objectives, constraints, decisions      ║${NC}"
 echo -e "${BOLD}║   ✓ Tracked failed attempts (GORM, timestamp cursor)  ║${NC}"
 echo -e "${BOLD}║   ✓ Exported a portable, integrity-verified capsule   ║${NC}"

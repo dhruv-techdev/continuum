@@ -14,6 +14,7 @@ import {
   readdirSync,
   statSync,
   copyFileSync,
+  unlinkSync,
 } from 'fs';
 import { join } from 'path';
 import { createHash, randomBytes, createCipheriv, createDecipheriv, scryptSync } from 'crypto';
@@ -129,7 +130,6 @@ export function encryptFile(filePath: string, passphrase: string): void {
   writeFileSync(filePath + '.enc', output);
 
   // Remove the original
-  const { unlinkSync } = require('fs');
   unlinkSync(filePath);
 }
 

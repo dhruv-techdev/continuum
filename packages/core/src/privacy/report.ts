@@ -7,7 +7,6 @@
 
 import type { RedactedEvent, RedactionSummary } from './redactor';
 import { RedactionActions } from './redactor';
-import type { SecretDetection } from './patterns';
 
 export interface RedactionReport {
   generatedAt: string;

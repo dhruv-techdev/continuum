@@ -143,8 +143,9 @@ describe('continuum import', () => {
     );
 
     const output = run(`import ${filePath}`, root);
-    expect(output).toContain('openai (detected)');
-    expect(output).toContain('Events:    2 created');
+    expect(output).toContain('Adapter:      ChatGPT (OpenAI) (chatgpt)');
+    expect(output).toContain('Provider:     openai');
+    expect(output).toContain('Messages:     2');
   });
 
   it('should show help text in --help', () => {

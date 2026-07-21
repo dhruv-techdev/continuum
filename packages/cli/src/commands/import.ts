@@ -51,7 +51,7 @@ export function registerImportCommand(program: Command): void {
     .description('Import an AI transcript into the active project')
     .option(
       '-a, --adapter <id>',
-      'Force a specific adapter (claude, generic-json, generic-markdown)',
+      'Force a specific adapter (claude, chatgpt, generic-json, generic-markdown)',
     )
     .option('-p, --provider <name>', 'AI provider name', 'import')
     .option('-m, --model <name>', 'Model identifier', 'unknown')

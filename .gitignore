@@ -1,6 +1,22 @@
-node_modules
-dist
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Workspace
+.continuum/
+
+# OS
 .DS_Store
-*.log
-.env
-coverage
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test
+coverage/
+
+# Temp
+*.tmp

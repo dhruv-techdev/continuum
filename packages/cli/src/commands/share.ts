@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { homedir } from 'os';
 import {
   DEFAULT_ROOT,
@@ -8,18 +8,12 @@ import {
   exportScopedCapsule,
   RedactionActions,
 } from '@continuum/core';
-import type { ScopeFilter, ScopedExportResult } from '@continuum/core';
+import type { ScopeFilter } from '@continuum/core';
 
 function requireProject(root: string): string {
   const s = getState(root);
   if (!s.activeProjectId) { console.error('\n✗ No active project.\n'); process.exit(1); }
   return s.activeProjectId;
-}
-
-function formatBytes(b: number): string {
-  if (b < 1024) return `${b} B`;
-  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
-  return `${(b / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function registerShareCommand(program: Command): void {
