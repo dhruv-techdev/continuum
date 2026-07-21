@@ -24,6 +24,7 @@ import { registerCoverageCommand } from './commands/coverage';
 import { registerScanCommand } from './commands/scan';
 import { registerShareCommand } from './commands/share';
 import { registerDashboardCommand } from './commands/dashboard';
+import { registerAuditCommand } from './commands/audit';
 
 const program = new Command();
 
@@ -54,5 +55,6 @@ registerCoverageCommand(program);
 registerScanCommand(program);
 registerShareCommand(program);
 registerDashboardCommand(program);
+registerAuditCommand(program);
 
 program.parse();

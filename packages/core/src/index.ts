@@ -348,3 +348,7 @@ export type { ScopeFilter, ScopedExportOptions, ScopedExportResult } from './cap
 // Dashboard
 export { buildDashboard } from './dashboard/index';
 export type { DashboardSnapshot } from './dashboard/index';
+
+// Audit
+export { AuditOperations, AuditOutcomes, logAudit, timedOperation, timedSync, readAuditLog, getAuditStats } from './audit/index';
+export type { AuditOperation, AuditOutcome, AuditEntry, AuditQuery, AuditStats } from './audit/index';
