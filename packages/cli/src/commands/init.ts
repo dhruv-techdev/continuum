@@ -1,7 +1,7 @@
 import { existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from 'commander';
-import { initWorkspace, loadConfig, DEFAULT_ROOT } from '@continuum/core';
+import { initWorkspace, loadConfig, DEFAULT_ROOT } from '@dhruv-techdev/continuum-core';
 
 function formatInitResult(result: ReturnType<typeof initWorkspace>): string {
   const lines: string[] = [];

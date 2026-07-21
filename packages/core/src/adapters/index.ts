@@ -1,6 +1,7 @@
 export type { Adapter, AdapterRegistry } from './types';
 
 export { claudeAdapter } from './claude';
+export { claudeCodeAdapter } from './claude-code';
 export { chatgptAdapter } from './chatgpt';
 export { adapterRegistry } from './registry';
 export { adapterNormalize } from './normalizer';

@@ -9,8 +9,8 @@ import {
   MODEL_PRESETS,
   getModelPreset,
   listPresetIds,
-} from '@continuum/core';
-import type { ContextLayer } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { ContextLayer } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);
@@ -56,6 +56,7 @@ export function registerContextCommand(program: Command): void {
     .command('package')
     .description('Generate a full layered context package')
     .option('-l, --layers <layers>', 'Layers to include (L0,L1,L2,L3,L4)', 'L0,L1,L2')
+    .option('-s, --session <id>', 'Scope to a single session instead of the whole project')
     .option('-b, --budget <tokens>', 'Token budget (0 = unlimited)', parseInt)
     .option(
       '-m, --model <preset>',
@@ -77,15 +78,22 @@ export function registerContextCommand(program: Command): void {
 
       const budget = resolveBudget(opts);
 
-      const pkg = buildContextPackage({
-        workspaceRoot: opts.root,
-        projectId,
-        tokenBudget: budget,
-        layers,
-        focusTopic: opts.focus,
-        maxEvidenceEvents: opts.maxEvidence,
-        maxArchiveEvents: opts.maxArchive,
-      });
+      let pkg;
+      try {
+        pkg = buildContextPackage({
+          workspaceRoot: opts.root,
+          projectId,
+          sessionId: opts.session,
+          tokenBudget: budget,
+          layers,
+          focusTopic: opts.focus,
+          maxEvidenceEvents: opts.maxEvidence,
+          maxArchiveEvents: opts.maxArchive,
+        });
+      } catch (err) {
+        console.error(`\n✗ ${(err as Error).message}\n`);
+        process.exit(1);
+      }
 
       if (opts.raw) {
         console.log(pkg.combined);
@@ -148,6 +156,7 @@ export function registerContextCommand(program: Command): void {
   ctx
     .command('resume')
     .description('Generate the standard L0+L1+L2 continuation package')
+    .option('-s, --session <id>', 'Scope to a single session instead of the whole project')
     .option('-b, --budget <tokens>', 'Token budget', parseInt)
     .option('-m, --model <preset>', 'Model preset for auto budget')
     .option('--raw', 'Output only the combined text', false)
@@ -156,16 +165,23 @@ export function registerContextCommand(program: Command): void {
       const projectId = requireProject(opts.root);
       const budget = resolveBudget(opts);
 
-      const pkg = buildContextPackage({
-        workspaceRoot: opts.root,
-        projectId,
-        tokenBudget: budget,
-        layers: [
-          ContextLayers.L0_ORIENTATION,
-          ContextLayers.L1_ACTIVE_STATE,
-          ContextLayers.L2_GOVERNING,
-        ],
-      });
+      let pkg;
+      try {
+        pkg = buildContextPackage({
+          workspaceRoot: opts.root,
+          projectId,
+          sessionId: opts.session,
+          tokenBudget: budget,
+          layers: [
+            ContextLayers.L0_ORIENTATION,
+            ContextLayers.L1_ACTIVE_STATE,
+            ContextLayers.L2_GOVERNING,
+          ],
+        });
+      } catch (err) {
+        console.error(`\n✗ ${(err as Error).message}\n`);
+        process.exit(1);
+      }
 
       if (opts.raw) {
         console.log(pkg.combined);

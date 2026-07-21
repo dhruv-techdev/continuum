@@ -15,8 +15,8 @@ import {
   getActiveStatements,
   StatementStatuses,
   VALID_CATEGORIES,
-} from '@continuum/core';
-import type { Statement, WorkingState, ContinuumEvent, StatementCategory } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { Statement, WorkingState, ContinuumEvent, StatementCategory } from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getWorkspaceState(root);

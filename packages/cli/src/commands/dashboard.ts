@@ -4,8 +4,8 @@ import {
   getState,
   buildDashboard,
   VERSION,
-} from '@continuum/core';
-import type { DashboardSnapshot } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { DashboardSnapshot } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);

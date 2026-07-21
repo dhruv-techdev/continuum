@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { resolve } from 'path';
-import { DEFAULT_ROOT } from '@continuum/core';
-import { ALL_TOOLS, startServer } from '@continuum/mcp';
-import type { ToolDef } from '@continuum/mcp';
+import { DEFAULT_ROOT } from '@dhruv-techdev/continuum-core';
+import { ALL_TOOLS, startServer } from '@dhruv-techdev/continuum-mcp';
+import type { ToolDef } from '@dhruv-techdev/continuum-mcp';
 
 export function registerMcpCommand(program: Command): void {
   const mcp = program.command('mcp').description('Manage the Continuum MCP server');
@@ -58,7 +58,7 @@ export function registerMcpCommand(program: Command): void {
     .description('Print MCP server configuration for use in client settings')
     .option('--root <path>', 'Workspace root', DEFAULT_ROOT)
     .action((opts) => {
-      const serverPath = resolve(__dirname, '../../node_modules/@continuum/mcp/src/index.ts');
+      const serverPath = resolve(__dirname, '../../node_modules/@dhruv-techdev/continuum-mcp/src/index.ts');
 
       const config = {
         continuum: {

@@ -9,8 +9,8 @@ import {
   isWorkspaceInitialized,
   loadConfig,
   DEFAULT_ROOT,
-} from '@continuum/core';
-import type { CheckResult } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { CheckResult } from '@dhruv-techdev/continuum-core';
 
 export function runChecks(): CheckResult[] {
   const checks: CheckResult[] = [];

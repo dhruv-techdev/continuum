@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import {
-  initWorkspace, createProject, startSession,
+  initWorkspace, createProject, startSession, listSessions,
   importTranscript, parseJSON,
   extractWorkingState, saveWorkingState, openLedger,
   createDecision, createTask, updateTaskStatus, recordAttempt,
@@ -266,6 +266,48 @@ describe('buildContextPackage()', () => {
         focusTopic: 'hash verification',
       });
       expect(pkg.combined).toContain('hash verification');
+    });
+  });
+
+  // ── Session scoping ──────────────────────────────────────
+
+  describe('session-scoped resume', () => {
+    let sessionAId: string;
+    let sessionBId: string;
+
+    beforeEach(() => {
+      const sessions = listSessions(root, projectId);
+      sessionAId = sessions[0].id;
+
+      const sessB = startSession(root, { projectId, provider: 'openai', model: 'gpt-4o' }).data!;
+      sessionBId = sessB.id;
+
+      importTranscript(root, projectId, sessB.id, parseJSON(JSON.stringify([
+        { role: 'user', content: 'Completely unrelated: switch the logging library to pino.' },
+        { role: 'assistant', content: 'Done, migrated to pino for structured logs.' },
+      ])), 'test');
+    });
+
+    it('should scope L0-L2 to just the given session', () => {
+      const pkg = buildContextPackage({ workspaceRoot: root, projectId, sessionId: sessionAId });
+      expect(pkg.combined).not.toContain('pino');
+      expect(pkg.combined).toContain('single session (' + sessionAId + ')');
+    });
+
+    it('should not leak the other session\'s state', () => {
+      const pkgB = buildContextPackage({ workspaceRoot: root, projectId, sessionId: sessionBId });
+      expect(pkgB.combined).not.toContain('JSONL for the append-only ledger');
+    });
+
+    it('should throw for an unknown session ID', () => {
+      expect(() =>
+        buildContextPackage({ workspaceRoot: root, projectId, sessionId: 'sess_nonexistent' }),
+      ).toThrow(/not found/);
+    });
+
+    it('should include all sessions when sessionId is omitted', () => {
+      const pkg = buildContextPackage({ workspaceRoot: root, projectId });
+      expect(pkg.combined).not.toContain('**Scope:**');
     });
   });
 });

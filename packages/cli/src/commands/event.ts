@@ -8,7 +8,7 @@ import {
   countAllEvents,
   getEventById,
   getEventsByIds,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

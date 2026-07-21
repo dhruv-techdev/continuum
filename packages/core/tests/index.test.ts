@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { VERSION, PRODUCT_NAME, DESCRIPTION, MIN_NODE_VERSION } from '../src/index';
 
-describe('@continuum/core', () => {
+describe('@dhruv-techdev/continuum-core', () => {
   it('should export VERSION as a valid semver string', () => {
     expect(VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });

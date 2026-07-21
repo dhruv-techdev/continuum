@@ -6,7 +6,7 @@
  */
 
 import { getProject } from '../projects/project-store';
-import { listSessions } from '../projects/session-store';
+import { listSessions, getSession } from '../projects/session-store';
 import { openLedger } from '../ledger/event-ledger';
 import {
   extractWorkingState,
@@ -22,8 +22,10 @@ import type { ContinuumEvent } from '../events/types';
 
 // ─── Load all events ────────────────────────────────────────
 
-function loadAllEvents(workspaceRoot: string, projectId: string): ContinuumEvent[] {
-  const sessions = listSessions(workspaceRoot, projectId);
+function loadAllEvents(workspaceRoot: string, projectId: string, sessionId?: string): ContinuumEvent[] {
+  const sessions = sessionId
+    ? listSessions(workspaceRoot, projectId).filter((s) => s.id === sessionId)
+    : listSessions(workspaceRoot, projectId);
   const all: ContinuumEvent[] = [];
 
   for (const session of sessions) {
@@ -37,7 +39,12 @@ function loadAllEvents(workspaceRoot: string, projectId: string): ContinuumEvent
 
 // ─── L0: Orientation (ST1) ──────────────────────────────────
 
-function buildL0(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
+function buildL0(
+  workspaceRoot: string,
+  projectId: string,
+  events: ContinuumEvent[],
+  sessionId?: string,
+): LayerContent {
   const project = getProject(workspaceRoot, projectId)!;
   const sessions = listSessions(workspaceRoot, projectId);
 
@@ -45,7 +52,11 @@ function buildL0(workspaceRoot: string, projectId: string, events: ContinuumEven
 
   if (project.description) lines.push(`**Description:** ${project.description}`);
 
-  lines.push(`**Sessions:** ${sessions.length}`);
+  if (sessionId) {
+    lines.push(`**Scope:** single session (${sessionId})`);
+  } else {
+    lines.push(`**Sessions:** ${sessions.length}`);
+  }
   lines.push(`**Total events:** ${events.length}`);
 
   if (events.length > 0) {
@@ -54,8 +65,10 @@ function buildL0(workspaceRoot: string, projectId: string, events: ContinuumEven
     );
   }
 
-  // Try to find the primary objective
-  const state = loadWorkingState(workspaceRoot, projectId);
+  // Try to find the primary objective. Scoped requests always extract fresh
+  // from the filtered events — the cached working state is project-wide and
+  // would leak state from other sessions.
+  const state = sessionId ? extractWorkingState(projectId, events) : loadWorkingState(workspaceRoot, projectId);
   if (state) {
     const activeObj = state.objectives.filter((o) => o.status === 'active');
     if (activeObj.length > 0) {
@@ -75,8 +88,13 @@ function buildL0(workspaceRoot: string, projectId: string, events: ContinuumEven
 
 // ─── L1: Active state (ST2) ────────────────────────────────
 
-function buildL1(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
-  let state = loadWorkingState(workspaceRoot, projectId);
+function buildL1(
+  workspaceRoot: string,
+  projectId: string,
+  events: ContinuumEvent[],
+  sessionId?: string,
+): LayerContent {
+  let state = sessionId ? null : loadWorkingState(workspaceRoot, projectId);
   if (!state) {
     state = extractWorkingState(projectId, events);
   }
@@ -103,12 +121,15 @@ function buildL1(workspaceRoot: string, projectId: string, events: ContinuumEven
     sections.push('');
   }
 
-  // Completed work
-  if (completedTasks.length > 0) {
-    sections.push(`### Completed (${completedTasks.length})`);
+  // Completed work — from the tracker (explicit) and the extractor (inferred from conversation)
+  const completedStatements = state.completed.filter((s) => s.status === 'active');
+  const completedTotal = completedTasks.length + completedStatements.length;
+  if (completedTotal > 0) {
+    sections.push(`### Completed (${completedTotal})`);
     for (const t of completedTasks.slice(-5))
       sections.push(`- ✓ ${t.description}${t.completionNote ? ` — ${t.completionNote}` : ''}`);
-    if (completedTasks.length > 5) sections.push(`- … and ${completedTasks.length - 5} more`);
+    for (const s of completedStatements.slice(-5)) sections.push(`- ✓ ${s.text}`);
+    if (completedTotal > 5) sections.push(`- … and ${completedTotal - 5} more`);
     sections.push('');
   }
 
@@ -153,8 +174,13 @@ function buildL1(workspaceRoot: string, projectId: string, events: ContinuumEven
 
 // ─── L2: Governing context (ST2) ───────────────────────────
 
-function buildL2(workspaceRoot: string, projectId: string, events: ContinuumEvent[]): LayerContent {
-  let state = loadWorkingState(workspaceRoot, projectId);
+function buildL2(
+  workspaceRoot: string,
+  projectId: string,
+  events: ContinuumEvent[],
+  sessionId?: string,
+): LayerContent {
+  let state = sessionId ? null : loadWorkingState(workspaceRoot, projectId);
   if (!state) {
     state = extractWorkingState(projectId, events);
   }
@@ -367,14 +393,18 @@ function buildL4(
 // ─── Assemble context package ───────────────────────────────
 
 export function buildContextPackage(options: ContextBuildOptions): ContextPackage {
-  const { workspaceRoot, projectId } = options;
+  const { workspaceRoot, projectId, sessionId } = options;
   const project = getProject(workspaceRoot, projectId);
 
   if (!project) {
     throw new Error(`Project "${projectId}" not found.`);
   }
 
-  const events = loadAllEvents(workspaceRoot, projectId);
+  if (sessionId && !getSession(workspaceRoot, projectId, sessionId)) {
+    throw new Error(`Session "${sessionId}" not found in project "${projectId}".`);
+  }
+
+  const events = loadAllEvents(workspaceRoot, projectId, sessionId);
   const requestedLayers = options.layers ?? [
     ContextLayers.L0_ORIENTATION,
     ContextLayers.L1_ACTIVE_STATE,
@@ -388,13 +418,13 @@ export function buildContextPackage(options: ContextBuildOptions): ContextPackag
   for (const layer of requestedLayers) {
     switch (layer) {
       case ContextLayers.L0_ORIENTATION:
-        builtLayers.push(buildL0(workspaceRoot, projectId, events));
+        builtLayers.push(buildL0(workspaceRoot, projectId, events, sessionId));
         break;
       case ContextLayers.L1_ACTIVE_STATE:
-        builtLayers.push(buildL1(workspaceRoot, projectId, events));
+        builtLayers.push(buildL1(workspaceRoot, projectId, events, sessionId));
         break;
       case ContextLayers.L2_GOVERNING:
-        builtLayers.push(buildL2(workspaceRoot, projectId, events));
+        builtLayers.push(buildL2(workspaceRoot, projectId, events, sessionId));
         break;
       case ContextLayers.L3_EVIDENCE:
         builtLayers.push(

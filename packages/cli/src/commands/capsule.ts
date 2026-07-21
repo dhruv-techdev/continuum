@@ -13,8 +13,8 @@ import {
   verifyCapsuleIntegrity,
   importCapsule,
   ImportPhases,
-} from '@continuum/core';
-import type { CapsuleManifest, ImportIssue } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { CapsuleManifest, ImportIssue } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);

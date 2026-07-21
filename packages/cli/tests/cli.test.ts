@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { resolve } from 'path';
+import { VERSION } from '@dhruv-techdev/continuum-core';
 
 const CLI = `npx tsx ${resolve(__dirname, '../src/index.ts')}`;
 
@@ -14,12 +15,12 @@ describe('continuum CLI', () => {
 
   it('should print version with --version', () => {
     const output = execSync(`${CLI} --version`, { encoding: 'utf-8' });
-    expect(output.trim()).toBe('0.1.0');
+    expect(output.trim()).toBe(VERSION);
   });
 
   it('should print version with -v', () => {
     const output = execSync(`${CLI} -v`, { encoding: 'utf-8' });
-    expect(output.trim()).toBe('0.1.0');
+    expect(output.trim()).toBe(VERSION);
   });
 
   it('should run doctor without errors', () => {

@@ -59,6 +59,8 @@ export interface ContextPackage {
 export interface ContextBuildOptions {
   workspaceRoot: string;
   projectId: string;
+  /** Scope to a single session instead of the whole project */
+  sessionId?: string;
   /** Max tokens for the combined output (0 = unlimited) */
   tokenBudget?: number;
   /** Which layers to include (default: L0-L2 for continuation) */

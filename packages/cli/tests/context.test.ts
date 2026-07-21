@@ -10,7 +10,7 @@ import {
   extractWorkingState, saveWorkingState, openLedger,
   createDecision, createTask, recordAttempt,
   AttemptOutcomes,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 const CLI = `npx tsx ${resolve(__dirname, '../src/index.ts')}`;
 

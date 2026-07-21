@@ -35,10 +35,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@continuum/core':
+      '@dhruv-techdev/continuum-core':
         specifier: workspace:*
         version: link:../core
-      '@continuum/mcp':
+      '@dhruv-techdev/continuum-mcp':
         specifier: workspace:*
         version: link:../mcp
       commander:
@@ -57,7 +57,7 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@continuum/core':
+      '@dhruv-techdev/continuum-core':
         specifier: workspace:*
         version: link:../core
       '@modelcontextprotocol/sdk':
@@ -66,7 +66,7 @@ importers:
 
   packages/web:
     dependencies:
-      '@continuum/core':
+      '@dhruv-techdev/continuum-core':
         specifier: workspace:*
         version: link:../core
 

@@ -8,7 +8,7 @@ import {
   listSessions,
   getProject,
   SessionStatuses,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): { projectId: string } {
   const state = getState(root);

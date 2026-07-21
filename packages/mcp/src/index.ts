@@ -2,7 +2,7 @@
 
 import { startServer } from './server';
 
-export { VERSION, PRODUCT_NAME } from '@continuum/core';
+export { VERSION, PRODUCT_NAME } from '@dhruv-techdev/continuum-core';
 export { createServer, startServer } from './server';
 export type { ServerOptions } from './server';
 export { ALL_TOOLS } from './tools';

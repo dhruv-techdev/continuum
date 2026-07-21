@@ -14,8 +14,8 @@ import {
   updateSessionAfterCapture,
   generateCallId,
   openLedger,
-} from '@continuum/core';
-import type { CaptureResult } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { CaptureResult } from '@dhruv-techdev/continuum-core';
 
 // ─── Context resolution (ST2) ───────────────────────────────
 

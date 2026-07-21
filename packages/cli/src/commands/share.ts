@@ -7,8 +7,8 @@ import {
   getProject,
   exportScopedCapsule,
   RedactionActions,
-} from '@continuum/core';
-import type { ScopeFilter } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { ScopeFilter } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);
