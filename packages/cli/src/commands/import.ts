@@ -10,9 +10,9 @@ import {
   adapterNormalize,
   importTranscript,
   parseTranscript,
-} from '@continuum/core';
-import type { ImportWarning } from '@continuum/core';
-import { openLedger } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { ImportWarning } from '@dhruv-techdev/continuum-core';
+import { openLedger } from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

@@ -26,12 +26,12 @@ import {
   buildRepairPackage,
   runRepairCycle,
   RepairStatuses,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 import type {
   VerificationReport,
   RepairReport,
   ContinuumEvent,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);

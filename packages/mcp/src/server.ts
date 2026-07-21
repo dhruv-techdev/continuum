@@ -9,7 +9,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { VERSION, PRODUCT_NAME, DEFAULT_ROOT } from '@continuum/core';
+import { VERSION, PRODUCT_NAME, DEFAULT_ROOT } from '@dhruv-techdev/continuum-core';
 import { ALL_TOOLS } from './tools';
 
 export interface ServerOptions {

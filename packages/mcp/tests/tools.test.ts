@@ -10,7 +10,7 @@ import {
   createDecision, createTask, recordAttempt, updateTaskStatus,
   openDB, closeDB, recoverWorkspace, ensureFTS,
   AttemptOutcomes, TaskStatuses,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 import { ALL_TOOLS } from '../src/tools';
 
 function callTool(name: string, args: Record<string, unknown>, root: string): unknown {
@@ -231,7 +231,7 @@ describe('MCP tools', () => {
     });
 
     it('should include inactive when requested', () => {
-      const { rejectDecision, listDecisions: ld } = require('@continuum/core');
+      const { rejectDecision, listDecisions: ld } = require('@dhruv-techdev/continuum-core');
       const decs = ld(root, projectId, true);
       if (decs.length > 0) {
         rejectDecision(root, projectId, decs[0].id, 'Testing');

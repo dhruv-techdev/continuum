@@ -1,11 +1,17 @@
 {
-  "name": "@continuum/mcp",
-  "version": "0.1.0",
+  "name": "@dhruv-techdev/continuum-mcp",
+  "version": "0.2.2",
   "description": "MCP server for Continuum — exposes context tools to AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "continuum-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
@@ -13,7 +19,7 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@continuum/core": "workspace:*",
+    "@dhruv-techdev/continuum-core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0"
   }
 }

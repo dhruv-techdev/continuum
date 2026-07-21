@@ -7,8 +7,8 @@ import {
   recoverWorkspace,
   countAllEvents,
   getTimeline,
-} from '@continuum/core';
-import type { TimelineEntry } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { TimelineEntry } from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

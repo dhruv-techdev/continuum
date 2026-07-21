@@ -5,8 +5,8 @@ import {
   readAuditLog,
   getAuditStats,
   AuditOutcomes,
-} from '@continuum/core';
-import type { AuditEntry, AuditQuery, AuditStats } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { AuditEntry, AuditQuery, AuditStats } from '@dhruv-techdev/continuum-core';
 
 function formatDuration(ms: number | null): string {
   if (ms === null) return '—';

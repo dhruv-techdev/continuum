@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { mkdtempSync, rmSync } from 'fs';
 import { join, resolve } from 'path';
 import { tmpdir } from 'os';
-import { initWorkspace, getState } from '@continuum/core';
+import { initWorkspace, getState } from '@dhruv-techdev/continuum-core';
 
 const CLI = `npx tsx ${resolve(__dirname, '../src/index.ts')}`;
 

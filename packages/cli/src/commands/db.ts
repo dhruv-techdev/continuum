@@ -8,7 +8,7 @@ import {
   recoverWorkspace,
   countAllEvents,
   getState,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

@@ -8,8 +8,8 @@ import {
   countIndexed,
   recoverWorkspace,
   ensureFTS,
-} from '@continuum/core';
-import type { SearchResult } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { SearchResult } from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

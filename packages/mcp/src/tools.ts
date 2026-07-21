@@ -27,8 +27,8 @@ import {
   search,
   recoverWorkspace,
   countIndexed,
-} from '@continuum/core';
-import type { ContinuumEvent } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { ContinuumEvent } from '@dhruv-techdev/continuum-core';
 
 // ─── Shared helpers ─────────────────────────────────────────
 
@@ -78,6 +78,10 @@ export const contextResume: ToolDef = {
     type: 'object',
     properties: {
       project_id: { type: 'string', description: 'Project ID (uses active project if omitted)' },
+      session_id: {
+        type: 'string',
+        description: 'Scope to a single session instead of the whole project (use context.get_source or a timeline lookup to find session IDs)',
+      },
       token_budget: {
         type: 'number',
         description: 'Max tokens for the context package (0 = unlimited)',
@@ -92,19 +96,26 @@ export const contextResume: ToolDef = {
     const project = getProject(root, projectId);
     if (!project) return { error: `Project "${projectId}" not found.` };
 
-    const pkg = buildContextPackage({
-      workspaceRoot: root,
-      projectId,
-      tokenBudget: (args.token_budget as number) ?? 0,
-      layers: [
-        ContextLayers.L0_ORIENTATION,
-        ContextLayers.L1_ACTIVE_STATE,
-        ContextLayers.L2_GOVERNING,
-      ],
-    });
+    let pkg;
+    try {
+      pkg = buildContextPackage({
+        workspaceRoot: root,
+        projectId,
+        sessionId: args.session_id as string | undefined,
+        tokenBudget: (args.token_budget as number) ?? 0,
+        layers: [
+          ContextLayers.L0_ORIENTATION,
+          ContextLayers.L1_ACTIVE_STATE,
+          ContextLayers.L2_GOVERNING,
+        ],
+      });
+    } catch (err) {
+      return { error: (err as Error).message };
+    }
 
     return {
       project: { id: projectId, title: project.title },
+      session_id: args.session_id ?? null,
       context: pkg.combined,
       tokens: pkg.totalTokens,
       layers: pkg.includedLayers,

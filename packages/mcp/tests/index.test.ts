@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { VERSION, PRODUCT_NAME } from '../src/index';
 
-describe('@continuum/mcp', () => {
+describe('@dhruv-techdev/continuum-mcp', () => {
   it('should re-export VERSION from core', () => {
     expect(VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });

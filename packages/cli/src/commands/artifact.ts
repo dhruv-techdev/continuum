@@ -8,8 +8,8 @@ import {
   deleteArtifact,
   StorageModes,
   ArtifactStatuses,
-} from '@continuum/core';
-import type { StorageMode } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { StorageMode } from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

@@ -7,11 +7,11 @@ import {
   listSessions,
   verifySessionLedger,
   IssueSeverities,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 import type {
   LedgerVerificationReport as VerificationReport,
   VerificationIssue,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 function requireActiveProject(root: string): string {
   const state = getState(root);

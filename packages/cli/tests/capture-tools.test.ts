@@ -11,8 +11,8 @@ import {
   setActiveSession,
   openLedger,
   correlateEvents,
-} from '@continuum/core';
-import type { ToolCallEvent, ToolResultEvent, CommandEvent, CommandOutputEvent } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { ToolCallEvent, ToolResultEvent, CommandEvent, CommandOutputEvent } from '@dhruv-techdev/continuum-core';
 
 const CLI = `npx tsx ${resolve(__dirname, '../src/index.ts')}`;
 

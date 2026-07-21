@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { VERSION, PRODUCT_NAME, DESCRIPTION } from '@continuum/core';
+import { VERSION, PRODUCT_NAME, DESCRIPTION } from '@dhruv-techdev/continuum-core';
 import { registerInitCommand } from './commands/init';
 import { registerDoctorCommand } from './commands/doctor';
 import { registerProjectCommand } from './commands/project';

@@ -6,8 +6,8 @@ import {
   openLedger,
   generateCoverageReport,
   FieldStatuses,
-} from '@continuum/core';
-import type { CoverageReport, CoverageField } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { CoverageReport, CoverageField } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);

@@ -1,11 +1,17 @@
 {
-  "name": "@continuum/cli",
-  "version": "0.1.0",
-  "description": "CLI for Continuum",
+  "name": "@dhruv-techdev/continuum-cli",
+  "version": "0.2.2",
+  "description": "CLI for Continuum — verifiable state transfer for AI work",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "continuum": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
@@ -13,8 +19,8 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@continuum/core": "workspace:*",
-    "@continuum/mcp": "workspace:*",
+    "@dhruv-techdev/continuum-core": "workspace:*",
+    "@dhruv-techdev/continuum-mcp": "workspace:*",
     "commander": "^12.0.0"
   }
 }

@@ -14,8 +14,8 @@ import {
   listAttempts,
   getFailedAttempts,
   AttemptOutcomes,
-} from '@continuum/core';
-import type { TaskStatus, AttemptOutcome } from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
+import type { TaskStatus, AttemptOutcome } from '@dhruv-techdev/continuum-core';
 
 function requireProject(root: string): string {
   const s = getState(root);

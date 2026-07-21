@@ -1,4 +1,4 @@
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.2';
 export const PRODUCT_NAME = 'Continuum';
 export const DESCRIPTION = 'Verifiable state transfer for AI work';
 export const MIN_NODE_VERSION = 18;
@@ -325,7 +325,7 @@ export type {
 } from './import/index';
 
 // Adapters
-export { claudeAdapter, chatgptAdapter, adapterRegistry, adapterNormalize } from './adapters/index';
+export { claudeAdapter, claudeCodeAdapter, chatgptAdapter, adapterRegistry, adapterNormalize } from './adapters/index';
 export type {
   Adapter,
   AdapterRegistry,

@@ -6,7 +6,7 @@ import {
   getProject,
   getState,
   setActiveProject,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 export function registerProjectCommand(program: Command): void {
   const project = program.command('project').description('Manage projects');

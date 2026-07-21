@@ -12,7 +12,7 @@ import {
   generateChecks, scoreChecks, buildReport, saveReport,
   loadDecisions, listTasks, listAttempts,
   TaskStatuses, AttemptOutcomes,
-} from '@continuum/core';
+} from '@dhruv-techdev/continuum-core';
 
 const CLI = `npx tsx ${resolve(__dirname, '../src/index.ts')}`;
 
