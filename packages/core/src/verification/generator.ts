@@ -240,9 +240,9 @@ function generateFailureChecks(state: WorkingState, attempts: Attempt[]): Verifi
     checks.push(
       createCheck(
         CheckDimensions.FAILURE_AWARENESS,
-        Criticalities.HIGH,
+        Criticalities.CRITICAL,
         `Has "${truncate(a.approach, 60)}" been tried before? What happened?`,
-        `YES — it was tried and ${a.outcome}. Reason: ${a.failureReason ?? 'not stated'}. Learned: ${a.observations || 'nothing recorded'}.`,
+        `YES — ${a.approach} was tried and ${a.outcome}. Reason: ${a.failureReason ?? 'not stated'}. Learned: ${a.observations || 'nothing recorded'}.`,
         a.sourceEventIds,
         'attempt_failed',
       ),
