@@ -4,7 +4,6 @@ import {
   getState,
   readAuditLog,
   getAuditStats,
-  AuditOperations,
   AuditOutcomes,
 } from '@continuum/core';
 import type { AuditEntry, AuditQuery, AuditStats } from '@continuum/core';

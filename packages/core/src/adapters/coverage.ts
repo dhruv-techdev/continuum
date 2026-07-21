@@ -128,7 +128,7 @@ const CANONICAL_FIELDS: Array<Omit<CoverageField, 'status' | 'count' | 'note'>> 
 // ─── ST2: Analyze events and build coverage report ──────────
 
 import type { ContinuumEvent } from '../events/types';
-import type { ParseResult, ImportWarning } from '../import/types';
+import type { ImportWarning } from '../import/types';
 
 interface FieldCounter {
   captured: number;

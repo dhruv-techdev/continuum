@@ -325,7 +325,7 @@ export type {
 } from './import/index';
 
 // Adapters
-export { claudeAdapter, adapterRegistry, adapterNormalize } from './adapters/index';
+export { claudeAdapter, chatgptAdapter, adapterRegistry, adapterNormalize } from './adapters/index';
 export type {
   Adapter,
   AdapterRegistry,

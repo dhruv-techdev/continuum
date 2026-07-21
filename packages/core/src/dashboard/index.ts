@@ -14,14 +14,6 @@ import { listTasks } from '../tracking/tasks';
 import { listAttempts, getFailedAttempts } from '../tracking/attempts';
 import { loadRegistry } from '../artifacts/registry';
 import { loadLatestReport, listReports } from '../verification/persistence';
-import type { Project } from '../projects/types';
-import type { Session } from '../projects/types';
-import type { Statement } from '../state-engine/types';
-import type { Decision } from '../tracking/decisions';
-import type { Task } from '../tracking/tasks';
-import type { Attempt } from '../tracking/attempts';
-import type { ArtifactEntry } from '../artifacts/types';
-import type { VerificationReport } from '../verification/types';
 
 // ─── Dashboard snapshot ─────────────────────────────────────
 

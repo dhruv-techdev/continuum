@@ -1,6 +1,7 @@
 import { extname } from 'path';
 import type { Adapter, AdapterRegistry } from './types';
 import { claudeAdapter } from './claude';
+import { chatgptAdapter } from './chatgpt';
 
 // Import the generic parsers as adapters
 import { parseJSON } from '../import/json-parser';
@@ -47,7 +48,7 @@ const genericMarkdownAdapter: Adapter = {
 
 function createRegistry(): AdapterRegistry {
   // Order matters: more specific adapters first
-  const adapters: Adapter[] = [claudeAdapter, genericJsonAdapter, genericMarkdownAdapter];
+  const adapters: Adapter[] = [claudeAdapter, chatgptAdapter, genericJsonAdapter, genericMarkdownAdapter];
 
   return {
     adapters,
